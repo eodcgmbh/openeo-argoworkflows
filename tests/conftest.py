@@ -11,9 +11,6 @@ from openeo_fastapi.client.auth import User
 from openeo_fastapi.api.types import Link
 from unittest.mock import patch
 
-from openeo_argoworkflows.jobs import ArgoJob
-from openeo_argoworkflows.settings import ExtendedAppSettings
-
 fs = fsspec.filesystem(protocol="file")
 
 __version__ = importlib.metadata.version("openeo_fastapi")
@@ -37,6 +34,9 @@ SETTINGS_DICT = {
 
 for k, v in SETTINGS_DICT.items():
     os.environ[k] = str(v)
+
+from openeo_argoworkflows.jobs import ArgoJob
+from openeo_argoworkflows.settings import ExtendedAppSettings
 
 def mock_user():
     return User(
