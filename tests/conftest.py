@@ -21,6 +21,23 @@ __version__ = importlib.metadata.version("openeo_fastapi")
 OPENEO_WORKSPACE_ROOT = "/openeo-argoworkflows/tests/data/out"
 ALEMBIC_DIR = Path(__file__).parent.parent / "tests/alembic/"
 
+SETTINGS_DICT = {
+        "API_DNS": "test.api.org",
+        "API_TLS": "False",
+        "API_TITLE": "OpenEO Argo Api",
+        "API_DESCRIPTION": "Testing the OpenEO Argo Api",
+        "STAC_API_URL": "http://test-stac-api.mock.com/api/",
+        "OIDC_URL": "http://test-oidc-api.mock.com/api/",
+        "OIDC_ORGANISATION": "issuer",
+        "OIDC_ROLES": ["testee"],
+        "OPENEO_WORKSPACE_ROOT": OPENEO_WORKSPACE_ROOT,
+        "ARGO_WORKFLOWS_SERVER": "http://not.real.argo.com/api/",
+        "ARGO_WORKFLOWS_NAMESPACE": "testing"
+    }
+
+for k, v in SETTINGS_DICT.items():
+    os.environ[k] = str(v)
+
 def mock_user():
     return User(
         user_id = uuid.uuid4(), oidc_sub="testuser@testing.eu"
@@ -57,23 +74,6 @@ def mock_links(uuid: uuid.UUID = uuid.uuid4()):
             title="Homepage of the service provider",
         )
     ]
-    
-SETTINGS_DICT = {
-        "API_DNS": "test.api.org",
-        "API_TLS": "False",
-        "API_TITLE": "OpenEO Argo Api",
-        "API_DESCRIPTION": "Testing the OpenEO Argo Api",
-        "STAC_API_URL": "http://test-stac-api.mock.com/api/",
-        "OIDC_URL": "http://test-oidc-api.mock.com/api/",
-        "OIDC_ORGANISATION": "issuer",
-        "OIDC_ROLES": ["testee"],
-        "OPENEO_WORKSPACE_ROOT": OPENEO_WORKSPACE_ROOT,
-        "ARGO_WORKFLOWS_SERVER": "http://not.real.argo.com/api/",
-        "ARGO_WORKFLOWS_NAMESPACE": "testing"
-    }
-
-for k, v in SETTINGS_DICT.items():
-    os.environ[k] = str(v)
 
 @pytest.fixture(scope="function")
 def mock_settings():
