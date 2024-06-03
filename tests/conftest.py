@@ -29,7 +29,8 @@ SETTINGS_DICT = {
         "OIDC_ROLES": ["testee"],
         "OPENEO_WORKSPACE_ROOT": OPENEO_WORKSPACE_ROOT,
         "ARGO_WORKFLOWS_SERVER": "http://not.real.argo.com/api/",
-        "ARGO_WORKFLOWS_NAMESPACE": "testing"
+        "ARGO_WORKFLOWS_NAMESPACE": "testing",
+        "ARGO_WORKFLOWS_TOKEN": "atoken"
     }
 
 for k, v in SETTINGS_DICT.items():
