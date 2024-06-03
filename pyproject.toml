@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "openeo-argoworkflows"
+version = "2024.6.1"
+description = ""
+authors = ["sean <sean.hoyal@external.eodc.eu>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.12"
+openeo_fastapi = "^2024.5.3"
+hera = "^5.15.1"
+redis = "5.0.4"
+rq = "1.16.2"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.2.0"
+ipykernel = "^6.15.1"
+pre-commit = "^2.20.0"
+pytest-cov = "^4.0.0"
+pytest-asyncio = "^0.23.0"
+pytest-postgresql= ">=4.1.1"
+pydoc-markdown = "4.8.2"
+fakeredis = "2.23.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,51 @@
+version: "3.8"
+
+services:
+  redis:
+    image: redis:4.0.6-alpine
+    ports:
+      - "6379:6379"
+
+  psql:
+    container_name: openeo-argoworkflows-api-psql
+    image: postgres:14-alpine
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=easy_access
+      - POSTGRES_USER=tester
+      - POSTGRES_DB=openeo
+
+  init-psql:
+    container_name: openeo-argoworkflows-api-init-psql
+    image: testme:latest
+    command: python -m openeo_argoworkflows.revise
+    env_file:
+      - .env
+    depends_on:
+      psql:
+        condition: service_started
+
+  worker:
+    container_name: openeo-argoworQkflows-queue-worker
+    image: testme:latest
+    command: python -m openeo_argoworkflows.worker
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_started
+
+  api:
+    container_name: openeo-argoworkflows-api
+    ports:
+      - 8000:8000
+    image: testme:latest
+    tty: true
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_started
+      init-psql:
+        condition: service_completed_successfully
