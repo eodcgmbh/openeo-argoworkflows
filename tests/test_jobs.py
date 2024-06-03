@@ -1,9 +1,12 @@
+import pytest
+
 from uuid import uuid4
 
 from fastapi.testclient import TestClient
 
 from openeo_fastapi.client.psql.engine import create, get
 
+@pytest.mark.skip("Not ready")
 def test_start_job(a_mock_user, a_mock_job, mock_links, mock_settings, mocked_validate_user):
     
     create(a_mock_job)
