@@ -16,7 +16,7 @@ fs = fsspec.filesystem(protocol="file")
 __version__ = importlib.metadata.version("openeo_fastapi")
 
 OPENEO_WORKSPACE_ROOT = "/openeo-argoworkflows/tests/data/out"
-ALEMBIC_DIR = Path(__file__).parent.parent / "tests/alembic/"
+ALEMBIC_DIR = Path(__file__).parent.parent / "openeo_argoworkflows/psql/"
 
 SETTINGS_DICT = {
         "API_DNS": "test.api.org",
@@ -109,7 +109,6 @@ def mock_engine(postgresql):
 
     alembic_cfg = Config("alembic.ini")
 
-    command.revision(alembic_cfg, f"openeo-argoworkflows-{__version__}", autogenerate=True)
     command.upgrade(alembic_cfg, "head")
 
     engine = get_engine()
@@ -118,14 +117,6 @@ def mock_engine(postgresql):
 
 @pytest.fixture(scope="module", autouse=True)
 def cleanup_out_folder():
-    # Path to test alembic versions folder
-    alembic_version_dir = str(ALEMBIC_DIR / "alembic/versions")
-    alembic_pycache = str(ALEMBIC_DIR / "__pycache__")
-    alembic_cache_dir = str(ALEMBIC_DIR / "alembic/__pycache__")
-    alembic_ver_cache_dir = str(ALEMBIC_DIR / "alembic/versions/__pycache__")
-
-    if not fs.exists(alembic_version_dir):
-        fs.mkdir(alembic_version_dir)
     
     yield  # Yield to the running tests
 
@@ -133,21 +124,6 @@ def cleanup_out_folder():
     if fs.exists(OPENEO_WORKSPACE_ROOT):
         fs.rm(OPENEO_WORKSPACE_ROOT, recursive=True)
         
-    # Teardown: Delete the alembic folder,
-    if fs.exists(alembic_version_dir):
-        for file in fs.ls(alembic_version_dir):
-            fs.rm(file, recursive=True)
-        fs.rmdir(alembic_version_dir)
-
-    # Remove alembic pycaches
-    if fs.exists(alembic_pycache):
-        fs.rm(alembic_pycache, recursive=True)
-
-    if fs.exists(alembic_ver_cache_dir):
-        fs.rm(alembic_ver_cache_dir, recursive=True)
-
-    if fs.exists(alembic_cache_dir):
-        fs.rm(alembic_cache_dir, recursive=True)
 
 
 @pytest.fixture
