@@ -19,13 +19,13 @@ env:
 jobs:
   tests_api:
     runs-on: ubuntu-latest
-    defaults:
-          run:
-            working-directory: ./openeo_argoworkflows/executor
     steps:
 
       - name: Checkout (GitHub)
         uses: actions/checkout@v3
+        with:
+          runCmd: |
+            cd openeo_argoworkflows/executor
 
       - name: Build and run dev container task
         uses: devcontainers/ci@v0.3
