@@ -27,6 +27,8 @@ pytest-cov = "^4.0.0"
 pytest-asyncio = "^0.23.0"
 pydoc-markdown = "4.8.2"
 
+[tool.poetry.scripts]
+openeo_executor = "openeo_argoworkflows_executor.cli:cli"
 
 [build-system]
 requires = ["poetry-core"]

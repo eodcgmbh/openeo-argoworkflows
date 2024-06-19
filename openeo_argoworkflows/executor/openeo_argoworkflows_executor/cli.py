@@ -29,7 +29,7 @@ def cli():
     help='Profile of the Dask Cluster to initialise.',
 )
 def execute(process_graph, user_profile, dask_profile):
-    """CLI for running the OpenEOExecutor on an OpenEOc process graph."""
+    """CLI for running the OpenEOExecutor on an OpenEO process graph."""
     
     import os
 
@@ -151,3 +151,8 @@ def execute(process_graph, user_profile, dask_profile):
 
     output_collection.update_extent_from_items()
     output_collection.save_object()
+
+cli.add_command(execute)
+
+if __name__ == '__main__':
+    cli()
