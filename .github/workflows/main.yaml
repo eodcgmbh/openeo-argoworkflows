@@ -19,6 +19,9 @@ env:
 jobs:
   tests_api:
     runs-on: ubuntu-latest
+    defaults:
+          run:
+            working-directory: ./openeo_argoworkflows/executor
     steps:
 
       - name: Checkout (GitHub)
@@ -29,7 +32,6 @@ jobs:
         with:
           # Change this to be your CI task/script
           runCmd: |
-            cd openeo_argoworkflows/executor
             poetry config virtualenvs.in-project true
             poetry install --with dev --all-extras
             poetry run pre-commit run
