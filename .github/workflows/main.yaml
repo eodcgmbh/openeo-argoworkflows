@@ -23,13 +23,11 @@ jobs:
 
       - name: Checkout (GitHub)
         uses: actions/checkout@v3
-        with:
-          runCmd: |
-            cd openeo_argoworkflows/executor
 
       - name: Build and run dev container task
         uses: devcontainers/ci@v0.3
         with:
+          subFolder: openeo_argoworkflows/executor/.devcontainer
           # Change this to be your CI task/script
           runCmd: |
             poetry config virtualenvs.in-project true
