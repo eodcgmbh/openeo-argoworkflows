@@ -30,7 +30,6 @@ jobs:
           subFolder: openeo_argoworkflows/executor
           # Change this to be your CI task/script
           runCmd: |
-            ls
             poetry config virtualenvs.in-project true
             poetry install --with dev --all-extras
             poetry run pytest 
