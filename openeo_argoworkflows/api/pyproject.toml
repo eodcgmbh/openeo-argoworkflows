@@ -1,9 +1,10 @@
 [tool.poetry]
-name = "openeo-argoworkflows"
+name = "openeo-argoworkflows-api"
 version = "2024.6.2"
 description = ""
 authors = ["sean <sean.hoyal@external.eodc.eu>"]
 readme = "README.md"
+packages = [{include = "openeo_argoworkflows_api"}]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"

@@ -12,4 +12,4 @@ RUN apt update -qy && \
         postgresql-13 \
         git
 
-WORKDIR /openeo_argoworkflows
+WORKDIR /openeo_argoworkflows_api

@@ -6,9 +6,9 @@ from rq import Queue
 from typing import Any
 
 from openeo_fastapi.client.psql.engine import modify
-from openeo_argoworkflows.psql.models import ArgoJob
-from openeo_argoworkflows.workflows import hello_world
-from openeo_argoworkflows.settings import ExtendedAppSettings
+from openeo_argoworkflows_api.psql.models import ArgoJob
+from openeo_argoworkflows_api.workflows import hello_world
+from openeo_argoworkflows_api.settings import ExtendedAppSettings
 
 settings = ExtendedAppSettings()
 q = Queue(
