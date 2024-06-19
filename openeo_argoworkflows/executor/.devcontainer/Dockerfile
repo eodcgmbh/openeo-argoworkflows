@@ -9,7 +9,6 @@ RUN if [ "${POETRY_VERSION}" != "none" ]; then su vscode -c "umask 0002 && pip3 
 
 RUN apt update -qy && \
     apt install -qy --no-install-recommends \
-        postgresql-13 \
         git
 
 WORKDIR /openeo_argoworkflows_executor

@@ -9,7 +9,7 @@ ARG POETRY_VERSION="1.8.3"
 ENV USERNAME=api
 ENV POETRY_VIRTUALENVS_IN_PROJECT 1
 ENV POETRY_HOME=/opt/poetry
-ENV VIRTUAL_ENV=/opt/openeo_argoworkflows/.venv
+ENV VIRTUAL_ENV=/opt/openeo_argoworkflows_api/.venv
 
 COPY ./README.md ./pyproject.toml ./poetry.lock /opt/
 
@@ -21,13 +21,13 @@ ENV PATH="${POETRY_HOME}/bin:${VIRTUAL_ENV}/bin:${PATH}"
 
 RUN poetry install --only main
 
-COPY --chown=${USER_ID}:${GROUP_ID} ./openeo_argoworkflows /opt/openeo_argoworkflows
+COPY --chown=${USER_ID}:${GROUP_ID} ./openeo_argoworkflows_api /opt/openeo_argoworkflows_api
 
 RUN addgroup --gid ${GROUP_ID} ${USERNAME}
 RUN adduser --disabled-password --gecos '' --uid ${USER_ID} --gid ${GROUP_ID} ${USERNAME}
 
 USER ${USER_ID}
 
-WORKDIR /opt/openeo_argoworkflows
+WORKDIR /opt/openeo_argoworkflows_api
 
-CMD ["uvicorn", "openeo_argoworkflows.app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "8"]
+CMD ["uvicorn", "openeo_argoworkflows_api.app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "8"]
