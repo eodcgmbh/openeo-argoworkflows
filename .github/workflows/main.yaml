@@ -34,9 +34,6 @@ jobs:
             api:
               - 'openeo_argoworkflows/api/**'
 
-      - name: Debug api changes output
-        run: echo ${{ steps.changes.outputs.api }}
-
       - name: Build and run dev container task
         if: ${{ steps.changes.outputs.api }} == 'true'
         uses: devcontainers/ci@v0.3
@@ -64,7 +61,7 @@ jobs:
               - 'openeo_argoworkflows/executor/**'  
 
       - name: Build and run dev container task
-        if: steps.changes.executor.src
+        if: ${{ steps.changes.outputs.executor }} == 'true'
         uses: devcontainers/ci@v0.3
         with:
           subFolder: openeo_argoworkflows/executor
