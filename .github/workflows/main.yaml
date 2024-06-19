@@ -17,19 +17,56 @@ env:
   POETRY_VERSION: 1.8.3
 
 jobs:
-  tests:
+
+
+  tests_api:
     runs-on: ubuntu-latest
     steps:
 
       - name: Checkout (GitHub)
         uses: actions/checkout@v3
 
+      - name: Has api changed
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            api:
+              - 'openeo_argoworkflows/api/**'
+
       - name: Build and run dev container task
+        if: ${{ steps.changes.outputs.api }} == 'true'
         uses: devcontainers/ci@v0.3
         with:
+          subFolder: openeo_argoworkflows/api
           # Change this to be your CI task/script
           runCmd: |
             poetry config virtualenvs.in-project true
             poetry install --with dev --all-extras
-            poetry run pre-commit run
+            poetry run pytest 
+
+  tests_executor:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout (GitHub)
+        uses: actions/checkout@v3
+
+      - name: Has executor changed
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            executor:
+              - 'openeo_argoworkflows/executor/**'  
+
+      - name: Build and run dev container task
+        if: ${{ steps.changes.outputs.executor }} == 'true'
+        uses: devcontainers/ci@v0.3
+        with:
+          subFolder: openeo_argoworkflows/executor
+          # Change this to be your CI task/script
+          runCmd: |
+            poetry config virtualenvs.in-project true
+            poetry install --with dev --all-extras
             poetry run pytest 

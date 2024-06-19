@@ -4,7 +4,7 @@ from os import environ
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
-from openeo_argoworkflows.psql.models import metadata
+from openeo_argoworkflows_api.psql.models import metadata
 
 
 # this is the Alembic Config object, which provides

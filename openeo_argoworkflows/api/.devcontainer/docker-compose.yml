@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  workspace:
+    container_name: openeo-argoworkflows-api-devcontainer
+
+    build:
+      context: ../
+      dockerfile: ".devcontainer/Dockerfile"
+      target: devcontainer
+    volumes:
+      - ../:/openeo-argoworkflows-api
+    tty: true

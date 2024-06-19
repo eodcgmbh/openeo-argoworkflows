@@ -1,16 +1,16 @@
 {
-    "name": "openeo-argoworkflows",
+    "name": "openeo-argoworkflows-executor",
 
     "dockerComposeFile": "./docker-compose.yml",
 
     "service": "workspace",
 
-    "workspaceFolder": "/openeo-argoworkflows",
+    "workspaceFolder": "/openeo-argoworkflows-executor",
 
 	"settings": {
-		"python.defaultInterpreterPath": "/openeo_argoworkflows/.venv",
-		"python.venvPath": "/openeo_argoworkflows/.venv",
-		"python.pythonPath": "/openeo_argoworkflows/.venv/bin/python",
+		"python.defaultInterpreterPath": "/openeo-argoworkflows-executor/.venv",
+		"python.venvPath": "/openeo-argoworkflows-executor/.venv",
+		"python.pythonPath": "/openeo-argoworkflows-executor/.venv/bin/python",
 		"python.testing.pytestArgs": [
 			"tests"
 		],

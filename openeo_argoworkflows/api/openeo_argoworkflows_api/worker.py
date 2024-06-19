@@ -3,7 +3,7 @@ import os
 from redis import Redis
 from rq import Worker, Queue, Connection
 
-from openeo_argoworkflows.settings import ExtendedAppSettings
+from openeo_argoworkflows_api.settings import ExtendedAppSettings
 
 settings = ExtendedAppSettings()
 

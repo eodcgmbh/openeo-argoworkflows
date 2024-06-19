@@ -5,8 +5,8 @@ from openeo_fastapi.api.app import OpenEOApi
 from openeo_fastapi.api.types import Billing, Plan
 from openeo_fastapi.client.core import OpenEOCore
 
-from openeo_argoworkflows.jobs import ArgoJobsRegister
-from openeo_argoworkflows.settings import ExtendedAppSettings
+from openeo_argoworkflows_api.jobs import ArgoJobsRegister
+from openeo_argoworkflows_api.settings import ExtendedAppSettings
 
 formats = []
 

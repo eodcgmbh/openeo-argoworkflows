@@ -15,8 +15,8 @@ fs = fsspec.filesystem(protocol="file")
 
 __version__ = importlib.metadata.version("openeo_fastapi")
 
-OPENEO_WORKSPACE_ROOT = "/openeo-argoworkflows/tests/data/out"
-ALEMBIC_DIR = Path(__file__).parent.parent / "openeo_argoworkflows/psql/"
+OPENEO_WORKSPACE_ROOT = "/openeo-argoworkflows-api/tests/data/out"
+ALEMBIC_DIR = Path(__file__).parent.parent / "openeo_argoworkflows_api/psql/"
 
 SETTINGS_DICT = {
         "API_DNS": "test.api.org",
@@ -36,8 +36,8 @@ SETTINGS_DICT = {
 for k, v in SETTINGS_DICT.items():
     os.environ[k] = str(v)
 
-from openeo_argoworkflows.jobs import ArgoJob
-from openeo_argoworkflows.settings import ExtendedAppSettings
+from openeo_argoworkflows_api.jobs import ArgoJob
+from openeo_argoworkflows_api.settings import ExtendedAppSettings
 
 def mock_user():
     return User(
