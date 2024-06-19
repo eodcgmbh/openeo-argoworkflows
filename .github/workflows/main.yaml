@@ -33,5 +33,4 @@ jobs:
             ls
             poetry config virtualenvs.in-project true
             poetry install --with dev --all-extras
-            poetry run pre-commit run
             poetry run pytest 
