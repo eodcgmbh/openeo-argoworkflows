@@ -34,7 +34,7 @@ jobs:
               - 'openeo_argoworkflows/api/**'
 
       - name: Build and run dev container task
-        if: ${{ steps.changes.outputs.api }} == 'true'
+        if: ${{ steps.changes.outputs.api == 'true' }}
         uses: devcontainers/ci@v0.3
         with:
           subFolder: openeo_argoworkflows/api
@@ -60,7 +60,7 @@ jobs:
               - 'openeo_argoworkflows/executor/**'  
 
       - name: Build and run dev container task
-        if: ${{ steps.changes.outputs.executor }} == 'true'
+        if: ${{ steps.changes.outputs.executor == 'true' }}
         uses: devcontainers/ci@v0.3
         with:
           subFolder: openeo_argoworkflows/executor
