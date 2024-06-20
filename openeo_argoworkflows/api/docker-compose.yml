@@ -27,7 +27,7 @@ services:
         condition: service_started
 
   worker:
-    container_name: openeo-argoworQkflows-queue-worker
+    container_name: openeo-argoworkflows-queue-worker
     image: testme:latest
     command: python -m openeo_argoworkflows.worker
     env_file:
