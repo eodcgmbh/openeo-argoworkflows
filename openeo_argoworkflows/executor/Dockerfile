@@ -20,8 +20,6 @@ RUN poetry install --only main
 
 COPY --chown=${USER_ID}:${GROUP_ID} ./openeo_argoworkflows_executor /opt/openeo_argoworkflows_executor
 
-########################################################################################################################
-FROM base as prod
 USER ${USER_ID}
 
 WORKDIR /opt/openeo_argoworkflows_executor
