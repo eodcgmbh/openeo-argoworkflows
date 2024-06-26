@@ -66,7 +66,7 @@ jobs:
 
       - name: Build and push Docker image for executor
         id: push-executor
-        if: ${{ steps.changes.outputs.executor == 'true' }}
+        if: ${{ steps.check-tag.outputs.executor == 'true' }}
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
         with:
           context: openeo_argoworkflows/executor
