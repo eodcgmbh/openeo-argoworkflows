@@ -12,19 +12,19 @@ def cli():
 @click.command()
 @click.option(
     '--process_graph',
-    type=dict,
+    type=str,
     required=True,
     help='OpenEO Process Graph as a JSON string.',
 )
 @click.option(
     '--user_profile',
-    type=dict,
+    type=str,
     required=True,
     help='Profile of the Dask Cluster to initialise.',
 )
 @click.option(
     '--dask_profile',
-    type=dict,
+    type=str,
     required=True,
     help='Profile of the Dask Cluster to initialise.',
 )
@@ -32,6 +32,7 @@ def execute(process_graph, user_profile, dask_profile):
     """CLI for running the OpenEOExecutor on an OpenEO process graph."""
     
     import os
+    import json
 
     from dask_gateway import Gateway
     import openeo_processes_dask
@@ -46,9 +47,9 @@ def execute(process_graph, user_profile, dask_profile):
     )
 
     openeo_parameters = ExecutorParameters(
-        process_graph=process_graph,
-        user_profile=user_profile,
-        dask_profile=dask_profile
+        process_graph=json.loads(process_graph),
+        user_profile=json.loads(user_profile),
+        dask_profile=json.loads(dask_profile)
     )
 
     if not openeo_parameters.user_profile.OPENEO_USER_WORKSPACE.exists():
@@ -65,10 +66,10 @@ def execute(process_graph, user_profile, dask_profile):
     os.environ["OPENEO_RESULTS_PATH"] = str(openeo_parameters.user_profile.results_path)
 
     if openeo_parameters.dask_profile.LOCAL:
-        from dask.distributed import local_client
+        from dask.distributed import worker_client
 
         dask_cluster = None
-        client = local_client()
+        client = worker_client()
         pass
     else:
         gateway = Gateway(openeo_parameters.dask_profile.GATEWAY_URL)
@@ -90,7 +91,7 @@ def execute(process_graph, user_profile, dask_profile):
         dask_cluster.adapt(minimum=1, maximum=openeo_parameters.dask_profile.WORKER_LIMIT)
         client = dask_cluster.get_client()
 
-    parsed_graph = OpenEOProcessGraph(pg_data=openeo_parameters.process_graph)
+    parsed_graph = OpenEOProcessGraph(pg_data=openeo_parameters.process_graph["process_graph"])
 
     execute(parsed_graph=parsed_graph)
 
@@ -123,7 +124,6 @@ def execute(process_graph, user_profile, dask_profile):
         )
     output_collection.set_self_href(collection_href)
 
-
     from openeo_argoworkflows_executor.stac import create_stac_item
 
     for file in fs.listdir(str(openeo_parameters.user_profile.results_path)):
@@ -151,6 +151,7 @@ def execute(process_graph, user_profile, dask_profile):
 
     output_collection.update_extent_from_items()
     output_collection.save_object()
+
 
 cli.add_command(execute)
 

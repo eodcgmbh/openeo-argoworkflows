@@ -58,7 +58,6 @@ def load_collection(
 
     result_items = list(results.items())
 
-    print("Number of items: ", len(result_items))
     example_item = result_items[0]
 
     if "proj:wkt2" in example_item.properties.keys():
@@ -107,18 +106,21 @@ def load_collection(
         **kwargs
     ).to_array(dim='bands')
 
+    # Add some sort of clipping here to the original bounding box that was requested.
     return lazy_xarray
 
 def save_result(
     data: RasterCube,
     format: str = 'netcdf',
     options: Optional[dict] = None,
-
 ):
     """ """
+    import uuid
+
+    _id = str(uuid.uuid4())
     # TODO A nice abstraction to split the xarray into the respective output datasets
     # TODO Some nicer way to handle the user workspace
-    destination = Path(os.environ["OPENEO_RESULTS_PATH"]) / "DATASET_1.nc"
+    destination = Path(os.environ["OPENEO_RESULTS_PATH"]) / f"{_id}.nc"
 
     data.to_netcdf(path=destination)
 
