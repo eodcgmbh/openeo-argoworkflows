@@ -1,5 +1,4 @@
-ARG VARIANT="3.11-bullseye"
-FROM mcr.microsoft.com/vscode/devcontainers/python:0-${VARIANT} as devcontainer
+FROM python:3.11-slim as base
 
 WORKDIR /opt
 ARG POETRY_VERSION="1.8.3"
@@ -21,6 +20,8 @@ RUN poetry install --only main
 
 COPY --chown=${USER_ID}:${GROUP_ID} ./openeo_argoworkflows_executor /opt/openeo_argoworkflows_executor
 
+########################################################################################################################
+FROM base as prod
 USER ${USER_ID}
 
 WORKDIR /opt/openeo_argoworkflows_executor
