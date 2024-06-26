@@ -13,17 +13,12 @@ def get_pg_bounding_box(process_graph: dict):
 
 def derive_sub_graph(cell, process_graph: dict):
 
-    print("Derive sub graph")
-
     west, south, east, north = cell[2].bounds
 
     for key, value in process_graph.items():
-        print(f"Process graph iteration {key}")
         if "load_" in value["process_id"]:
-            print("Update spatial extent")
             process_graph[key]["arguments"]["spatial_extent"] = {
                 "west": west, "east": east, "south": south, "north": north
             }
 
-    print("Return new graph ")
     return process_graph
