@@ -1,14 +1,15 @@
 import importlib
 import inspect
 import logging
-
-from pathlib import Path
-from pydantic import BaseModel
 from typing import Optional
 
 from openeo_pg_parser_networkx import Process, ProcessRegistry, OpenEOProcessGraph
 from openeo_processes_dask.process_implementations.core import process
 
+from openeo_argoworkflows_executor.stac import StacGrid
+from openeo_argoworkflows_executor.utils import (
+    derive_sub_graph, get_pg_bounding_box
+)
 
 logger = logging.getLogger(__name__)
 
@@ -43,23 +44,48 @@ def _register_processes_from_module(
     return process_registry
 
 
+def prepare_graphs(
+    process_graph: OpenEOProcessGraph
+):
+    # We get the total bounding box from the process graph
+    _box = get_pg_bounding_box(process_graph.pg_data)
+
+
+    bbox = [ _box.west, _box.south, _box.east, _box.north ]
+
+    tilesize = 100000
+    crs = 4326
+
+    grid = StacGrid(
+        bbox, tilesize, crs
+    )
+
+    # We get the cells for this given process graph
+    grid.set_grid_cells()
+
+    sub_graphs = []
+    # Derive a list of "sub_graphs"
+    for cell in grid.cells:
+        sub_graphs.append(
+            OpenEOProcessGraph(pg_data=derive_sub_graph(cell, process_graph.pg_data))
+        )
+
+    return sub_graphs    
+
 def execute(
-    parsed_graph: OpenEOProcessGraph,
-    parameters: Optional[dict] = None,
+    parsed_graph: OpenEOProcessGraph
 ):
     process_registry = ProcessRegistry(wrap_funcs=[process])
     
     _register_processes_from_module(process_registry, "openeo_processes_dask")
     _register_processes_from_module(process_registry, "openeo_argoworkflows_executor.extra_processes")
 
+    sub_graphs = prepare_graphs(parsed_graph)
 
-    print("Wants to call")
-    parsed_graph = parsed_graph
-    pg_callable = parsed_graph.to_callable(
-        process_registry=process_registry,
-        results_cache={},
-        parameters=parameters,
-    )
-    
-    print("Started Processing. ", pg_callable, type(pg_callable))
-    pg_callable()
+    for graph in sub_graphs:
+        pg_callable = graph.to_callable(
+            process_registry=process_registry,
+            results_cache={}
+        )
+        
+        pg_callable()
