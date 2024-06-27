@@ -91,7 +91,7 @@ def execute(process_graph, user_profile, dask_profile):
         dask_cluster.adapt(minimum=1, maximum=openeo_parameters.dask_profile.WORKER_LIMIT)
         client = dask_cluster.get_client()
 
-    parsed_graph = OpenEOProcessGraph(pg_data=openeo_parameters.process_graph["process_graph"])
+    parsed_graph = OpenEOProcessGraph(pg_data=openeo_parameters.process_graph)
 
     execute(parsed_graph=parsed_graph)
 
