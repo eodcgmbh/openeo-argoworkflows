@@ -58,8 +58,8 @@ def submit_job(job: ArgoJob):
     }
 
     user_profile = {
-        "OPENEO_JOB_ID": job.job_id,
-        "OPENEO_USER_ID": job.user_id,
+        "OPENEO_JOB_ID": str(job.job_id),
+        "OPENEO_USER_ID": str(job.user_id),
         "OPENEO_USER_WORKSPACE": str(settings.OPENEO_WORKSPACE_ROOT / str(job.user_id) / str(job.job_id))
     }
     workflow = executor_workflow(argo, job.process.process_graph, dask_profile, user_profile)
