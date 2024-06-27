@@ -18,10 +18,10 @@ from urllib.parse import urljoin
 from openeo_fastapi.api.types import Status, Error
 from openeo_fastapi.api.models import JobsGetLogsResponse, JobsRequest
 from openeo_fastapi.client.psql import engine
-from openeo_fastapi.client.jobs import JobsRegister, Job
+from openeo_fastapi.client.jobs import JobsRegister
 from openeo_fastapi.client.auth import Authenticator, User
 
-from openeo_argoworkflows_api.psql.models import ArgoJob, ArgoJobORM
+from openeo_argoworkflows_api.psql.models import ArgoJob
 from openeo_argoworkflows_api.tasks import queue_to_submit
 
 fs = fsspec.filesystem(protocol="file")

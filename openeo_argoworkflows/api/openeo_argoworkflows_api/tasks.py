@@ -7,7 +7,7 @@ from typing import Any
 
 from openeo_fastapi.client.psql.engine import modify
 from openeo_argoworkflows_api.psql.models import ArgoJob
-from openeo_argoworkflows_api.workflows import hello_world
+from openeo_argoworkflows_api.workflows import executor_workflow
 from openeo_argoworkflows_api.settings import ExtendedAppSettings
 
 settings = ExtendedAppSettings()
@@ -51,9 +51,18 @@ def submit_job(job: ArgoJob):
         verify_ssl=False,
         namespace=settings.ARGO_WORKFLOWS_NAMESPACE,
         token=settings.ARGO_WORKFLOWS_TOKEN.get_secret_value(),
-    )
-    
-    workflow = hello_world(argo, job.process.process_graph)
+    )    
+
+    dask_profile = {
+        "LOCAL": True
+    }
+
+    user_profile = {
+        "OPENEO_JOB_ID": job.job_id,
+        "OPENEO_USER_ID": job.user_id,
+        "OPENEO_USER_WORKSPACE": settings.OPENEO_WORKSPACE_ROOT / job.user_id / job.job_id
+    }
+    workflow = executor_workflow(argo, job.process.process_graph, dask_profile, user_profile)
 
     response = workflow.create()
 
