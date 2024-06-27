@@ -45,7 +45,8 @@ jobs:
         run: |
           if [[ ${{ github.event.ref }} =~ ^refs/tags/api-[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
               echo "api=true" >> $GITHUB_OUTPUT
-          elif [[ ${{ github.event.ref }} =~ ^refs/tags/executor-[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          fi
+          if [[ ${{ github.event.ref }} =~ ^refs/tags/executor-[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
              echo "executor=true" >> $GITHUB_OUTPUT
           fi
 
@@ -65,7 +66,7 @@ jobs:
 
       - name: Build and push Docker image for executor
         id: push-executor
-        if: ${{ steps.changes.outputs.executor == 'true' }}
+        if: ${{ steps.check-tag.outputs.executor == 'true' }}
         uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
         with:
           context: openeo_argoworkflows/executor

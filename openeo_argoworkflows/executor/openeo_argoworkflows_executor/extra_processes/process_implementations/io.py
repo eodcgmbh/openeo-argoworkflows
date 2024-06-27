@@ -6,7 +6,6 @@ from odc.stac import stac_load
 from pathlib import Path
 from pystac.extensions import raster
 from typing import Optional, Union
-from openeo_processes_dask.process_implementations.cubes import load_stac
 from openeo_processes_dask.process_implementations.data_model import (
     RasterCube
 )
