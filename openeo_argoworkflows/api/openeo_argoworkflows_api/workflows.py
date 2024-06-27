@@ -3,9 +3,13 @@ import json
 from hera.workflows import Steps, Workflow, WorkflowsService, Step
 from hera.workflows.models import Template, Container, Metadata, PersistentVolumeClaimVolumeSource, Volume, VolumeMount
 
+from openeo_argoworkflows_api.settings import ExtendedAppSettings
+
 
 def executor_workflow(service: WorkflowsService, process_graph: dict, dask_profile: dict, user_profile: dict):
     user_profile_as_dict = json.loads(user_profile)
+
+    settings = ExtendedAppSettings()
     with Workflow(
         generate_name="openeo-executor-",
         entrypoint="process",
@@ -31,7 +35,7 @@ def executor_workflow(service: WorkflowsService, process_graph: dict, dask_profi
                 template=Template(
                     name="executor",
                     container=Container(
-                        image="ghcr.io/eodcgmbh/openeo-argoworkflows:executor-2024.6.2",
+                        image=settings.OPENEO_EXECUTOR_IMAGE,
                         command=["openeo_executor"],
                         args=[
                             "execute",
@@ -42,7 +46,7 @@ def executor_workflow(service: WorkflowsService, process_graph: dict, dask_profi
                         volume_mounts=[
                             VolumeMount(
                                 name="workspaces-volume",
-                                mount_path="/user_workspaces"
+                                mount_path=str(settings.OPENEO_WORKSPACE_ROOT)
                             )
                         ]
                     )
