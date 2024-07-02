@@ -81,11 +81,7 @@ def mock_links(uuid: uuid.UUID = uuid.uuid4()):
 def mock_settings():
     return ExtendedAppSettings(**SETTINGS_DICT)
 
-@pytest.fixture()
-def mocked_validate_user():
-    with patch("openeo_argoworkflows.jobs.Authenticator.validate") as mock:
-        mock.return_value = mock_user()
-        yield mock
+
         
 @pytest.fixture(autouse=True)
 def mock_engine(postgresql):
@@ -119,6 +115,9 @@ def mock_engine(postgresql):
 @pytest.fixture(scope="module", autouse=True)
 def cleanup_out_folder():
     
+    if not fs.exists(OPENEO_WORKSPACE_ROOT):
+        fs.mkdir(OPENEO_WORKSPACE_ROOT)
+
     yield  # Yield to the running tests
 
     # Teardown: Delete the output folder,
@@ -130,3 +129,29 @@ def cleanup_out_folder():
 @pytest.fixture
 def redis_conn():
     return FakeStrictRedis(decode_responses=True)
+
+def mock_auth(status_code=200):
+    import json
+    from fastapi import Response
+
+    user = mock_user()
+
+    if not status_code:
+        status_code = 200
+    fake_sub_id = "testuser@eodc.eu"
+    test_resp_content_bytes = json.dumps(
+        {
+            "userinfo_endpoint": "http://a.fake_url_again.cloud/",
+            "eduperson_entitlement": [
+                "urn:mace:egi.eu:group:vo.openeo.cloud:role=early_adopter#aai.egi.eu",
+                "urn:mace:egi.eu:group:vo.openeo.cloud:role=platform_developer#aai.egi.eu",
+            ],
+            "sub": user.oidc_sub,
+        }
+    ).encode("utf-8")
+
+    mocked_response = Response()
+    mocked_response.status_code = status_code
+    mocked_response._content = test_resp_content_bytes
+
+    return {"user": user.user_id, "sub": user.oidc_sub, "resp": mocked_response}

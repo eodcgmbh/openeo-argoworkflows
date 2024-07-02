@@ -11,8 +11,11 @@ from hera.workflows.models import WorkflowStopRequest
 from hera.exceptions import NotFound
 from fastapi import Depends, Response, HTTPException
 from typing import Optional
-from pydantic import conint
+from pathlib import Path
+from pydantic import conint, BaseModel
+from pystac import Collection, Link as StacLink
 from sqlalchemy.exc import IntegrityError
+from typing import Union
 from urllib.parse import urljoin
 
 from openeo_fastapi.api.types import Status, Error
@@ -21,12 +24,40 @@ from openeo_fastapi.client.psql import engine
 from openeo_fastapi.client.jobs import JobsRegister
 from openeo_fastapi.client.auth import Authenticator, User
 
+from openeo_argoworkflows_api.auth import ExtendedAuthenticator
 from openeo_argoworkflows_api.psql.models import ArgoJob
 from openeo_argoworkflows_api.tasks import queue_to_submit
 
 fs = fsspec.filesystem(protocol="file")
 
 logger = logging.getLogger(__name__)
+
+
+class UserWorkspace(BaseModel):
+
+    root_dir: Path
+    user_id: Union[str, uuid.UUID]
+    job_id: Union[str, uuid.UUID]
+
+    @property
+    def user_directory(self):
+        return self.root_dir / str(self.user_id)
+    
+    @property
+    def job_directory(self):
+        return self.user_directory / str(self.job_id)
+    
+    @property
+    def stac_directory(self):
+        return self.job_directory / "STAC"
+
+    @property
+    def results_directory(self):
+        return self.job_directory / "RESULTS"
+    
+    @property
+    def results_collection_json(self):
+        return self.stac_directory / f"{self.job_id}_collection.json"
 
 
 class ArgoJobsRegister(JobsRegister):
@@ -230,3 +261,83 @@ class ArgoJobsRegister(JobsRegister):
                 logs=logs,
                 links=[],
             ).dict(exclude_none=True)
+
+
+    def get_results(
+        self, job_id: uuid.UUID, user: User = Depends(ExtendedAuthenticator.signed_url_or_validate)
+    ):
+        """Get the results for the BatchJob.
+
+        Args:
+            job_id (JobId): A UUID job id.
+            body (JobsRequest): The Job Request that should be used to create the new BatchJob.
+            user (User): The User returned from the Authenticator.
+
+        Raises:
+            HTTPException: Raises an exception with relevant status code and descriptive message of failure.
+
+        """
+
+        job = engine.get(get_model=ArgoJob, primary_key=job_id)
+
+        wspace = UserWorkspace(
+            root_dir=self.settings.OPENEO_WORKSPACE_ROOT, user_id=str(user.user_id), job_id=str(job.job_id)
+        )
+
+        stac_collection = Collection.from_file(str(wspace.results_collection_json))
+
+        new_links = [link for link in stac_collection.links if link.rel != "item"]
+
+        if self.settings.API_TLS:
+            API_SELF_URL = f"https://{self.settings.API_DNS}"
+        else:
+            API_SELF_URL= f"http://{self.settings.API_DNS}"
+
+        self_url = f"{self.settings.OPENEO_PREFIX}/jobs/{str(job.job_id)}/results"
+
+        for link in new_links:
+            link._target_href = API_SELF_URL.__add__(self_url)
+
+        # Sign urls
+        now = datetime.datetime.now().replace(microsecond=0)
+        week = datetime.timedelta(days=7)
+        expiry = now + week
+
+        canonical_url = API_SELF_URL.__add__(
+            ExtendedAuthenticator.sign_url(
+                url=self_url,
+                key_name="OPENEO_SIGN_KEY",
+                user_id=user.user_id,
+                expiration_time=expiry
+            )
+        )
+        new_links.append(StacLink(rel="canonical", target=canonical_url))
+
+        stac_collection.links = new_links
+
+        for value in stac_collection.assets.values():
+            file_name = value.href.split("/")[-1]
+            relative_path = "/{job_id}/RESULTS/{file}".format(
+                user_id=user, job_id=job_id, file=file_name
+            )
+            path ="{prefix}/files{path}".format(prefix=self.settings.OPENEO_PREFIX, path=relative_path)
+
+            value.href = API_SELF_URL.__add__(
+                ExtendedAuthenticator.sign_url(
+                    url=path,
+                    key_name="OPENEO_SIGN_KEY",
+                    user_id=user.user_id,
+                    expiration_time=expiry
+                )
+            )
+
+        stac_collection.summaries.add(
+            "datetime", {
+                "minimum": str(stac_collection.extent.temporal.intervals[0][0]),
+                "maximum": str(stac_collection.extent.temporal.intervals[0][1])
+            }
+        )
+
+        stac_collection.extra_fields.update({"openeo:status": "finished"})
+
+        return stac_collection.to_dict()

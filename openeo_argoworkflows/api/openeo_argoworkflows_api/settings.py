@@ -7,7 +7,8 @@ from openeo_fastapi.client.settings import AppSettings
 class ExtendedAppSettings(AppSettings):
     
     OPENEO_WORKSPACE_ROOT: Optional[Path]
-    OPENEO_EXECUTOR_IMAGE: str
+    OPENEO_EXECUTOR_IMAGE: Optional[str]
+    OPENEO_SIGN_KEY: Optional[str]
 
     ARGO_WORKFLOWS_SERVER: Optional[AnyUrl]
     ARGO_WORKFLOWS_NAMESPACE: Optional[str]
