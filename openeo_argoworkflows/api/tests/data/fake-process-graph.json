@@ -1,0 +1,94 @@
+{
+    "process_graph": {
+      "load1": {
+        "process_id": "load_collection",
+        "arguments": {
+          "id": "sentinel1-grd",
+          "spatial_extent": {
+            "west": -180,
+            "east": 180,
+            "south": -90,
+            "north": 90
+          },
+          "temporal_extent": [
+            "2014-10-03T04:14:15",
+            "2023-01-01T00:00:00"
+          ]
+        }
+      },
+      "load2": {
+        "process_id": "load_collection",
+        "arguments": {
+          "id": "sentinel-2-l1c",
+          "spatial_extent": {
+            "west": -180,
+            "east": 180,
+            "south": -90,
+            "north": 90
+          },
+          "temporal_extent": [
+            "2023-01-10T00:00:00Z",
+            "2023-01-19T00:00:00Z"
+          ]
+        }
+      },
+      "sar3": {
+        "process_id": "sar_backscatter",
+        "arguments": {
+          "data": {
+            "from_node": "load1"
+          }
+        }
+      },
+      "ard5": {
+        "process_id": "ard_surface_reflectance",
+        "arguments": {
+          "data": {
+            "from_node": "load2"
+          },
+          "atmospheric_correction_method": "FORCE",
+          "cloud_detection_method": "Fmask",
+          "atmospheric_correction_options": {
+            "adjacency_effect": true,
+            "do_atmo": true,
+            "do_brdf": true,
+            "do_topo": true,
+            "multi_scattering": true,
+            "res_merge": "IMPROPHE"
+          },
+          "cloud_detection_options": {
+            "cloud_buffer": 300,
+            "cloud_threshold": 0.225,
+            "erase_clouds": true,
+            "max_cloud_cover_frame": 90,
+            "max_cloud_cover_tile": 90,
+            "shadow_buffer": 90,
+            "shadow_threshold": 0.02,
+            "snow_buffer": 30
+          }
+        }
+      },
+      "merge7": {
+        "process_id": "merge_cubes",
+        "arguments": {
+          "cube1": {
+            "from_node": "sar3"
+          },
+          "cube2": {
+            "from_node": "ard5"
+          }
+        }
+      },
+      "save9": {
+        "process_id": "save_result",
+        "arguments": {
+          "data": {
+            "from_node": "merge7"
+          },
+          "format": "GTIFF"
+        },
+        "result": true
+      }
+    },
+    "parameters": []
+  }
