@@ -155,14 +155,3 @@ def mock_auth(status_code=200):
     mocked_response._content = test_resp_content_bytes
 
     return {"user": user.user_id, "sub": user.oidc_sub, "resp": mocked_response}
-
-
-# @pytest.fixture(autouse=True)
-# def mocked_get(request):
-#     status_code = request.node.get_closest_marker("status_code")
-#     with patch("openeo_fastapi.client.auth.requests.get") as mock:
-#         mock.return_value = mock_auth(status_code=status_code)["resp"]
-#         if request.node.get_closest_marker("manual_get"):
-#             mock = None
-#         yield mock
-
