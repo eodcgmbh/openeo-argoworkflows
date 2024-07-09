@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "openeo-argoworkflows-executor"
-version = "2024.6.2"
+version = "2024.6.3"
 description = ""
 authors = ["sean <sean.hoyal@external.eodc.eu>"]
 readme = "README.md"
@@ -26,6 +26,7 @@ pre-commit = "^2.20.0"
 pytest-cov = "^4.0.0"
 pytest-asyncio = "^0.23.0"
 pydoc-markdown = "4.8.2"
+matplotlib = "3.9.0"
 
 [tool.poetry.scripts]
 openeo_executor = "openeo_argoworkflows_executor.cli:cli"

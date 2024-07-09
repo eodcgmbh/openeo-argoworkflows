@@ -1,7 +1,6 @@
 import importlib
 import inspect
 import logging
-from typing import Optional
 
 from openeo_pg_parser_networkx import Process, ProcessRegistry, OpenEOProcessGraph
 from openeo_processes_dask.process_implementations.core import process
@@ -49,7 +48,6 @@ def prepare_graphs(
 ):
     # We get the total bounding box from the process graph
     _box = get_pg_bounding_box(process_graph.pg_data)
-
 
     bbox = [ _box.west, _box.south, _box.east, _box.north ]
 
