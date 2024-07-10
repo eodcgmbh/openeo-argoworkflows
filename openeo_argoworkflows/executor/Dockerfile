@@ -30,7 +30,9 @@ COPY --chown=${USER_ID}:${GROUP_ID} ./openeo_argoworkflows_executor /opt/openeo_
 # Need to update the symlinks to the python interpreter in the venv to the new location.
 RUN ln -sf /usr/local/bin/python /opt/openeo_argoworkflows_executor/.venv/bin/python \
     && ln -sf /usr/local/bin/python3 /opt/openeo_argoworkflows_executor/.venv/bin/python3 \
-    && ln -sf /usr/local/bin/python3.9 /opt/openeo_argoworkflows_executor/.venv/bin/python3.9
+    && ln -sf /usr/local/bin/python3.9 /opt/openeo_argoworkflows_executor/.venv/bin/python3.9 \
+    && groupadd -g ${GROUP_ID} -o executor \
+    && useradd -m -u ${USER_ID} -g ${GROUP_ID} -o -s /bin/bash executor
 
 ENV VIRTUAL_ENV=/opt/openeo_argoworkflows_executor/.venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"

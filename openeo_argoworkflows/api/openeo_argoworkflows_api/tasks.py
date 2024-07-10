@@ -59,6 +59,7 @@ def submit_job(job: ArgoJob):
             "OPENEO_EXECUTOR_IMAGE": settings.OPENEO_EXECUTOR_IMAGE,
             "WORKER_CORES": "4",
             "WORKER_MEMORY": "8",
+            "WORKER_LIMIT": "6",
             "CLUSTER_IDLE_TIMEOUT": "3600"
         }
     else:
