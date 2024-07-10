@@ -88,7 +88,7 @@ def execute(process_graph, user_profile, dask_profile):
 
         # We need to initiate a cluster with at least one worker, otherwise .scatter that's used in xgboost will timeout waiting for workers
         # See https://github.com/dask/distributed/issues/2941
-        dask_cluster.adapt(minimum=1, maximum=openeo_parameters.dask_profile.WORKER_LIMIT)
+        dask_cluster.adapt(minimum=1, maximum=int(openeo_parameters.dask_profile.WORKER_LIMIT))
         client = dask_cluster.get_client()
 
     parsed_graph = OpenEOProcessGraph(pg_data=openeo_parameters.process_graph)
