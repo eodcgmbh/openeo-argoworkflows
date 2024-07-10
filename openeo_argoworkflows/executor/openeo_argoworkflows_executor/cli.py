@@ -75,14 +75,14 @@ def execute(process_graph, user_profile, dask_profile):
         gateway = Gateway(openeo_parameters.dask_profile.GATEWAY_URL)
         options = gateway.cluster_options()
 
-        options.openeo_job_id = openeo_parameters.user_profile.OPENEO_JOB_ID
-        options.openeo_user_id = openeo_parameters.user_profile.OPENEO_USER_ID
+        options.OPENEO_JOB_ID = openeo_parameters.user_profile.OPENEO_JOB_ID
+        options.OPENEO_USER_ID = openeo_parameters.user_profile.OPENEO_USER_ID
 
-        options.image = openeo_parameters.dask_profile.OPENEO_EXECUTOR_IMAGE
+        options.IMAGE = openeo_parameters.dask_profile.OPENEO_EXECUTOR_IMAGE
 
-        options.worker_cores = openeo_parameters.dask_profile.WORKER_CORES
-        options.worker_memory = openeo_parameters.dask_profile.WORKER_MEMORY
-        options.idle_timeout = openeo_parameters.dask_profile.CLUSTER_IDLE_TIMEOUT
+        options.WORKER_CORES = int(openeo_parameters.dask_profile.WORKER_CORES)
+        options.WORKER_MEMORY = int(openeo_parameters.dask_profile.WORKER_MEMORY)
+        options.CLUSTER_IDLE_TIMEOUT = int(openeo_parameters.dask_profile.CLUSTER_IDLE_TIMEOUT)
 
         dask_cluster = gateway.new_cluster(options, shutdown_on_close=True)
 

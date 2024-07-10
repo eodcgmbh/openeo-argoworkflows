@@ -53,9 +53,18 @@ def submit_job(job: ArgoJob):
         token=settings.ARGO_WORKFLOWS_TOKEN.get_secret_value(),
     )    
 
-    dask_profile = {
-        "LOCAL": True
-    }
+    if settings.DASK_GATEWAY_SERVER and settings.OPENEO_EXECUTOR_IMAGE:
+        dask_profile = {
+            "GATEWAY_URL": settings.DASK_GATEWAY_SERVER,
+            "OPENEO_EXECUTOR_IMAGE": settings.OPENEO_EXECUTOR_IMAGE,
+            "WORKER_CORES": "4",
+            "WORKER_MEMORY": "8",
+            "CLUSTER_IDLE_TIMEOUT": "3600"
+        }
+    else:
+        dask_profile = {
+            "LOCAL": True
+        }
 
     user_profile = {
         "OPENEO_JOB_ID": str(job.job_id),

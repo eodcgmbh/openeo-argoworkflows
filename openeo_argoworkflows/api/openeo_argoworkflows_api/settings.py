@@ -14,6 +14,8 @@ class ExtendedAppSettings(AppSettings):
     ARGO_WORKFLOWS_NAMESPACE: Optional[str]
     ARGO_WORKFLOWS_TOKEN: Optional[SecretStr]
     ARGO_WORKFLOWS_LIMIT: int = 10
+    
+    DASK_GATEWAY_SERVER: Optional[str]
 
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
