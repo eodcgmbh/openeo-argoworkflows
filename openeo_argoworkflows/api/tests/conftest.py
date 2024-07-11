@@ -31,7 +31,8 @@ SETTINGS_DICT = {
         "ARGO_WORKFLOWS_SERVER": "http://not.real.argo.com/api/",
         "ARGO_WORKFLOWS_NAMESPACE": "testing",
         "ARGO_WORKFLOWS_TOKEN": "atoken",
-        "OPENEO_EXECUTOR_IMAGE": "testimage:2024.6.1"
+        "OPENEO_EXECUTOR_IMAGE": "testimage:2024.6.1",
+        "OPENEO_SIGN_KEY": "xx9Yp6whivS0wrC2CmIhxlJAMbfDugZw"
     }
 
 for k, v in SETTINGS_DICT.items():
