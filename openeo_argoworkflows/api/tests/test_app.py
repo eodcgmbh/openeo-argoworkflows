@@ -1,9 +1,56 @@
+import datetime
+import fsspec
+
 from fastapi.testclient import TestClient
 
+from openeo_fastapi.client.psql.engine import create
 from openeo_argoworkflows_api.app import client
-from openeo_argoworkflows_api.jobs import ArgoJobsRegister
+from openeo_argoworkflows_api.jobs import ArgoJobsRegister, UserWorkspace
+from openeo_argoworkflows_api.auth import ExtendedAuthenticator
+
+from openeo_argoworkflows_api.app import app as app_api
 
 def test_jobs_is_argo():
     """Test the OpenEOApi and OpenEOCore classes interact as intended."""
 
     assert isinstance(client.jobs, ArgoJobsRegister)
+
+def test_signed_urls(a_mock_user, a_mock_job, mock_settings):
+    """ """
+
+    fs = fsspec.filesystem(protocol="file")
+    a_mock_job.status == "finished"
+
+    create(a_mock_user)
+    create(a_mock_job)
+
+    workspace = UserWorkspace(
+        user_id=str(a_mock_user.user_id),
+        job_id=str(a_mock_job.job_id),
+        root_dir=mock_settings.OPENEO_WORKSPACE_ROOT.parent / "out"
+    )
+
+
+    # Ensure 'users workspace' exists
+    fs.mkdir(workspace.user_directory)
+    fs.mkdir(workspace.job_directory)
+    fs.mkdir(workspace.results_directory)
+
+    original_file = str(
+        mock_settings.OPENEO_WORKSPACE_ROOT.parent / "fake-process-graph.json"
+    )
+
+    fs.copy(
+        original_file, str(workspace.results_directory)
+    )
+
+    test_path = f"{mock_settings.OPENEO_PREFIX}/files/{str(a_mock_job.job_id)}/RESULTS/fake-process-graph.json"
+
+    signed = ExtendedAuthenticator.sign_url(
+        test_path, "OPENEO_SIGN_KEY", str(a_mock_user.user_id), datetime.datetime.fromtimestamp(1678692590)
+    )
+
+    app = TestClient(app_api)
+
+    resp = app.get(signed)
+    assert resp.status_code == 200
