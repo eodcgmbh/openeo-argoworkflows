@@ -9,6 +9,7 @@ from typing import Optional, Union
 from openeo_processes_dask.process_implementations.data_model import (
     RasterCube
 )
+from openeo_processes_dask.process_implementations.cubes._filter import filter_bbox
 from openeo_pg_parser_networkx.pg_schema import BoundingBox, GeoJson, TemporalInterval
 
 __all__ = ["load_collection", "save_result"]
@@ -21,8 +22,6 @@ def load_collection(
     properties: Optional[dict] = None,
     **kwargs,
 ):
-    print("In load collection")
-
     stac_url = f"https://stac.eodc.eu/api/v1/"
 
     query_dict = {}
@@ -106,7 +105,7 @@ def load_collection(
     ).to_array(dim='bands')
 
     # Add some sort of clipping here to the original bounding box that was requested.
-    return lazy_xarray
+    return filter_bbox(lazy_xarray, extent=spatial_extent)
 
 def save_result(
     data: RasterCube,
@@ -121,5 +120,5 @@ def save_result(
     # TODO Some nicer way to handle the user workspace
     destination = Path(os.environ["OPENEO_RESULTS_PATH"]) / f"{_id}.nc"
 
-    data.to_netcdf(path=destination)
+    data.to_netcdf(path=destination, engine="netcdf4")
 
