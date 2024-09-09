@@ -2,14 +2,28 @@
 from fastapi import FastAPI
 
 from openeo_fastapi.api.app import OpenEOApi
-from openeo_fastapi.api.types import Billing, Plan
+from openeo_fastapi.api.types import Billing, Plan, FileFormat, GisDataType
 from openeo_fastapi.client.core import OpenEOCore
 
 from openeo_argoworkflows_api.jobs import ArgoJobsRegister
 from openeo_argoworkflows_api.files import ArgoFileRegister
 from openeo_argoworkflows_api.settings import ExtendedAppSettings
 
-formats = []
+
+gtif = FileFormat(
+   title="GTiff",
+    gis_data_types=[GisDataType("raster")],
+    parameters={},
+)
+
+netcdf = FileFormat(
+   title="netCDF",
+    gis_data_types=[GisDataType("raster")],
+    parameters={},
+)
+
+input_formats = [ gtif, netcdf ]
+output_formats = [ netcdf ]
 
 links = []
 
@@ -19,8 +33,8 @@ client = OpenEOCore(
     settings=settings,
     files=ArgoFileRegister(settings=settings, links=links),
     jobs=ArgoJobsRegister(settings=settings, links=links),
-    input_formats=formats,
-    output_formats=formats,
+    input_formats=input_formats,
+    output_formats=output_formats,
     links=links,
     billing=Billing(
         currency="credits",
