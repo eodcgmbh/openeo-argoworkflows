@@ -41,5 +41,17 @@ def test_file_download(user_validate, a_mock_user, mock_settings):
 
     assert resp.status_code == 200
 
+def test_file_formats():
+    
+    app = TestClient(app_api)
+
+    resp = app.get(f"/1.1.0/file_formats")
+
+    json_out = resp.json()
+
+    assert resp.status_code == 200
+    assert len(json_out["input"]) == 2
+    assert len(json_out["output"]) == 1
+
 
 
