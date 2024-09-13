@@ -2,18 +2,24 @@ import datetime
 import fsspec
 import json
 import logging
+import os
+import io
 import requests
+import tarfile
+import time
 import uuid
 
 from hera.exceptions import NotFound
 from hera.workflows import WorkflowsService
 from hera.workflows.models import WorkflowStopRequest
 from hera.exceptions import NotFound
-from fastapi import Depends, Response, HTTPException
+from fastapi import Depends, Response, HTTPException, responses
 from typing import Optional
 from pathlib import Path
 from pydantic import conint, BaseModel
 from pystac import Collection, Link as StacLink
+from redis import Redis
+from rq import Queue
 from sqlalchemy.exc import IntegrityError
 from typing import Union
 from urllib.parse import urljoin
@@ -26,7 +32,8 @@ from openeo_fastapi.client.auth import Authenticator, User
 
 from openeo_argoworkflows_api.auth import ExtendedAuthenticator
 from openeo_argoworkflows_api.psql.models import ArgoJob
-from openeo_argoworkflows_api.tasks import queue_to_submit
+from openeo_argoworkflows_api.tasks import queue_to_submit, submit_job
+
 
 fs = fsspec.filesystem(protocol="file")
 
@@ -68,6 +75,12 @@ class ArgoJobsRegister(JobsRegister):
         self.workflows_service = WorkflowsService(
             host=settings.ARGO_WORKFLOWS_SERVER, verify_ssl=False, namespace=settings.ARGO_WORKFLOWS_NAMESPACE
         )
+
+        self.q = Queue(
+            connection=Redis(
+            host=settings.REDIS_HOST,
+            port=settings.REDIS_PORT
+        ))
 
     def create_job(
         self, body: JobsRequest, user: User = Depends(Authenticator.validate)
@@ -341,3 +354,88 @@ class ArgoJobsRegister(JobsRegister):
         stac_collection.extra_fields.update({"openeo:status": "finished"})
 
         return stac_collection.to_dict()
+    
+
+    def process_sync_job(self, body: JobsRequest = JobsRequest(), user: User = Depends(Authenticator.validate)):
+        """Start the processing of a synchronous Job.
+
+        Args:
+            body (JobsRequest): The Job Request that should be used to create the new BatchJob.
+            user (User): The User returned from the Authenticator.
+
+        Raises:
+            HTTPException: Raises an exception with relevant status code and descriptive message of failure.
+                        
+        """
+
+        # Ensure there is a record of this sync job run
+        job_id = uuid.uuid4()
+
+        if not body.process.id:
+            auto_name_size = 16
+            body.process.id = uuid.uuid4().hex[:auto_name_size].upper()
+
+        # Create the job
+        job = ArgoJob(
+            job_id=job_id,
+            process=body.process,
+            status=Status.queued,
+            title=body.title,
+            description=f"Synchronous execution of process graph {body.process.id}.",
+            user_id=user.user_id,
+            created=datetime.datetime.now(),
+            synchronous=True
+        )
+
+        engine.create(create_object=job)
+
+        self.q.enqueue(submit_job, job)
+
+        job_finished = False
+
+        # Needs to wait for completion
+        while not job_finished:
+            job = engine.get(ArgoJob, job.job_id)
+            if job.status == Status.finished:
+                job_finished = True
+            elif job.status == Status.error:
+                raise HTTPException(
+                    status_code=500,
+                    detail=Error(code="InternalServerError", message="Failed to process. Submit as batch job to view logs."),
+                )
+            elif job.status == Status.running:
+                time.sleep(15)
+
+        wspace = UserWorkspace(
+            root_dir=self.settings.OPENEO_WORKSPACE_ROOT, user_id=str(user.user_id), job_id=str(job.job_id)
+        )
+
+        files = [file for file in wspace.results_directory.glob(f"*") if file.is_file()]
+
+        if len(files) == 0:
+            raise HTTPException(
+                status_code=500,
+                detail=f"No files to return for request.",
+            )
+
+        tar_buffer = io.BytesIO()
+        with tarfile.open(mode="w", fileobj=tar_buffer) as tar:
+            for file_path in files:
+                tar.add(file_path, arcname=os.path.basename(file_path))
+
+        def tar_file_iterator(tar_buffer):
+            tar_buffer.seek(0)
+            yield from tar_buffer
+
+        response = responses.StreamingResponse(
+            tar_file_iterator(tar_buffer),
+            200,
+            headers={
+                "Content-Disposition": 'attachment; filename="archive.tar"',
+                "Content-Type": "application/x-tar",
+            },
+        )
+        return response
+
+    
+

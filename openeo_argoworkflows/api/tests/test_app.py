@@ -2,6 +2,7 @@ import datetime
 import fsspec
 
 from fastapi.testclient import TestClient
+from unittest.mock import patch
 
 from openeo_fastapi.client.psql.engine import create
 from openeo_argoworkflows_api.app import client
@@ -54,3 +55,4 @@ def test_signed_urls(a_mock_user, a_mock_job, mock_settings):
 
     resp = app.get(signed)
     assert resp.status_code == 200
+

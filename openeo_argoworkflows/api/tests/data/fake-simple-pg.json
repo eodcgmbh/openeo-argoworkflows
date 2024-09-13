@@ -1,0 +1,16 @@
+{
+    "valid1": {
+        "process_id": "valid_load",
+        "arguments": {}
+    },
+    "save3": {
+        "process_id": "save_result",
+        "arguments": {
+            "data": {
+                "from_node": "valid1"
+            },
+            "format": "GTIFF"
+        },
+        "result": true
+    }
+}

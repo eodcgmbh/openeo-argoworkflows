@@ -1,6 +1,6 @@
 import json
 
-from hera.workflows import Steps, Workflow, WorkflowsService, Step
+from hera.workflows import Steps, Workflow, WorkflowsService, Step, Env
 from hera.workflows.models import Template, Container, Metadata, PersistentVolumeClaimVolumeSource, Volume, VolumeMount
 
 from openeo_argoworkflows_api.settings import ExtendedAppSettings
@@ -37,6 +37,9 @@ def executor_workflow(service: WorkflowsService, process_graph: dict, dask_profi
                 template=Template(
                     name="executor",
                     container=Container(
+                        env=[
+                            Env(name="STAC_API_URL", value=str(settings.STAC_API_URL))
+                        ],
                         image=settings.OPENEO_EXECUTOR_IMAGE,
                         command=["openeo_executor"],
                         args=[
