@@ -22,8 +22,6 @@ def load_collection(
     properties: Optional[dict] = None,
     **kwargs,
 ):
-    stac_url = f"https://stac.eodc.eu/api/v1/"
-
     query_dict = {}
 
     query_dict["collections"] = [id]
@@ -51,7 +49,10 @@ def load_collection(
         [str(time.root) for time in temporal_extent if time != 'None']
     )
 
-    catalog = pystac_client.Client.open(stac_url)
+    if "STAC_API_URL" not in os.environ:
+        raise Exception("STAC URL Not available in executor config.")
+
+    catalog = pystac_client.Client.open(os.environ["STAC_API_URL"])
     results = catalog.search(**query_dict, limit=10)
 
     result_items = list(results.items())
