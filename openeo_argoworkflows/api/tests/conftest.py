@@ -26,7 +26,6 @@ SETTINGS_DICT = {
         "STAC_API_URL": "http://test-stac-api.mock.com/api/",
         "OIDC_URL": "http://test-oidc-api.mock.com/api/",
         "OIDC_ORGANISATION": "issuer",
-        "OIDC_ROLES": ["testee"],
         "OPENEO_WORKSPACE_ROOT": OPENEO_WORKSPACE_ROOT,
         "ARGO_WORKFLOWS_SERVER": "http://not.real.argo.com/api/",
         "ARGO_WORKFLOWS_NAMESPACE": "testing",

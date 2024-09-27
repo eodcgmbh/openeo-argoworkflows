@@ -417,24 +417,49 @@ class ArgoJobsRegister(JobsRegister):
                 status_code=500,
                 detail=f"No files to return for request.",
             )
+        elif len(files) == 1:
+            def single_file_iterator(file_path):
+                with open(file_path, "rb") as file:
+                    yield from file
+            
+            file = files[0]
 
-        tar_buffer = io.BytesIO()
-        with tarfile.open(mode="w", fileobj=tar_buffer) as tar:
-            for file_path in files:
-                tar.add(file_path, arcname=os.path.basename(file_path))
+            # TODO Improve, maybe move general functionality of mimetypes to openeo-fastapi
+            extention = os.path.splitext(file)[1]
+            mime_types = {
+                ".tif": "image/tiff; application=geotiff; profile=cloud-optimized",
+                ".nc": "application/netcdf",
+                ".json": "application/json"
+            }
+            mime_type = mime_types[extention]
 
-        def tar_file_iterator(tar_buffer):
-            tar_buffer.seek(0)
-            yield from tar_buffer
+            response = responses.StreamingResponse(
+                single_file_iterator(file),
+                200,
+                headers={
+                    "Content-Disposition": f'attachment; filename="{os.path.basename(file)}"',
+                    "Content-Type": mime_type,
+                },
+            )
 
-        response = responses.StreamingResponse(
-            tar_file_iterator(tar_buffer),
-            200,
-            headers={
-                "Content-Disposition": 'attachment; filename="archive.tar"',
-                "Content-Type": "application/x-tar",
-            },
-        )
+        else:
+            tar_buffer = io.BytesIO()
+            with tarfile.open(mode="w", fileobj=tar_buffer) as tar:
+                for file_path in files:
+                    tar.add(file_path, arcname=os.path.basename(file_path))
+
+            def tar_file_iterator(tar_buffer):
+                tar_buffer.seek(0)
+                yield from tar_buffer
+
+            response = responses.StreamingResponse(
+                tar_file_iterator(tar_buffer),
+                200,
+                headers={
+                    "Content-Disposition": 'attachment; filename="archive.tar"',
+                    "Content-Type": "application/x-tar",
+                },
+            )
         return response
 
     

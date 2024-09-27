@@ -56,3 +56,31 @@ def test_signed_urls(a_mock_user, a_mock_job, mock_settings):
     resp = app.get(signed)
     assert resp.status_code == 200
 
+
+def test_get_credentials(mock_settings):
+    """ """
+
+    test_path = f"{mock_settings.OPENEO_PREFIX}/credentials/oidc"
+
+    app = TestClient(app_api)
+
+    resp = app.get(test_path)
+    assert resp.status_code == 200
+
+
+def test_get_wellknown(mock_settings):
+    """ """
+
+    test_path = f"/.well-known/openeo"
+
+    app = TestClient(app_api)
+
+    resp = app.get(test_path)
+    assert resp.status_code == 200
+
+    test_path = f"{mock_settings.OPENEO_VERSION}/.well-known/openeo"
+
+    app = TestClient(app_api)
+
+    resp = app.get(test_path)
+    assert resp.status_code == 200
