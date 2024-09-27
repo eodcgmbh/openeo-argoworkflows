@@ -1,6 +1,9 @@
+import logging
+import numpy as np
 import os
 import pyproj
 import pystac_client
+import xarray as xr
 
 from odc.stac import stac_load
 from pathlib import Path
@@ -114,12 +117,48 @@ def save_result(
     options: Optional[dict] = None,
 ):
     """ """
+    def clean_unused_coordinates(ds):
+        """
+        Remove all coordinates that are not used in the DataArray dimensions.
+        """
+        # Gather all dimensions used by DataArray variables
+        used_dims = set()
+        for var in ds.dims:
+            used_dims.update(ds[var].dims)
+
+        # Drop unused coordinates
+        for coord in list(ds.coords):
+            if coord not in used_dims:
+                ds = ds.drop_vars(coord)
+        return ds
+
     import uuid
+
+    logging.info("DATA ", data)
+    logging.info("DATA ATTRS ", data.attrs)
 
     _id = str(uuid.uuid4())
     # TODO A nice abstraction to split the xarray into the respective output datasets
     # TODO Some nicer way to handle the user workspace
     destination = Path(os.environ["OPENEO_RESULTS_PATH"]) / f"{_id}.nc"
+    dim = data.openeo.band_dims[0] if data.openeo.band_dims else None
+    crs = data.crs
+    
+    data.attrs = {}
+    data.attrs["crs"] = str(crs)
 
-    data.to_netcdf(path=destination, engine="netcdf4")
+    out_data: xr.Dataset = data.to_dataset(
+        dim=dim, name="name" if not dim else None, promote_attrs=True
+    )
+
+    dtype = None
+    if not dtype:
+        dtype = "float32"
+
+    comp = dict(zlib=True, complevel=5, dtype=dtype)
+    
+    encoding = {var: comp for var in out_data.data_vars}
+    out_data = clean_unused_coordinates(out_data)
+
+    out_data.to_netcdf(path=destination, encoding=encoding)
 

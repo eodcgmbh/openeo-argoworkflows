@@ -37,15 +37,15 @@ def test_file_download(user_validate, a_mock_user, mock_settings):
 
     headers = {"Authorization": "Bearer /oidc/egi/toetoetoeken"}
 
-    resp = app.get(f"/1.1.0/files/{file_in_workspace}", headers=headers)
+    resp = app.get(f"{mock_settings.OPENEO_PREFIX}/files/{file_in_workspace}", headers=headers)
 
     assert resp.status_code == 200
 
-def test_file_formats():
+def test_file_formats(mock_settings):
     
     app = TestClient(app_api)
 
-    resp = app.get(f"/1.1.0/file_formats")
+    resp = app.get(f"{mock_settings.OPENEO_PREFIX}/file_formats")
 
     json_out = resp.json()
 
