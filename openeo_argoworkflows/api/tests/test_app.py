@@ -8,6 +8,7 @@ from openeo_fastapi.client.psql.engine import create
 from openeo_argoworkflows_api.app import client
 from openeo_argoworkflows_api.jobs import ArgoJobsRegister, UserWorkspace
 from openeo_argoworkflows_api.auth import ExtendedAuthenticator
+from openeo_argoworkflows_api.settings import ExtendedAppSettings
 
 from openeo_argoworkflows_api.app import app as app_api
 
@@ -15,6 +16,23 @@ def test_jobs_is_argo():
     """Test the OpenEOApi and OpenEOCore classes interact as intended."""
 
     assert isinstance(client.jobs, ArgoJobsRegister)
+
+def test_app_settings():
+
+    blank_policies = ExtendedAppSettings(
+        OIDC_POLICIES = ""
+    )
+    assert not blank_policies.OIDC_POLICIES
+
+    single_policy = ExtendedAppSettings(
+        OIDC_POLICIES = "groups, /staff"
+    )
+    assert single_policy.OIDC_POLICIES == ["groups,/staff"]
+
+    multi_policy = ExtendedAppSettings(
+        OIDC_POLICIES = "groups, /staff && groups, /users"
+    )
+    assert multi_policy.OIDC_POLICIES == ["groups,/staff", "groups,/users"]
 
 def test_signed_urls(a_mock_user, a_mock_job, mock_settings):
     """ """
