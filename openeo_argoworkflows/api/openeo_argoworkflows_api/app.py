@@ -6,7 +6,6 @@ from openeo_fastapi.api.app import OpenEOApi
 from openeo_fastapi.api.types import Billing, Plan, FileFormat, GisDataType
 from openeo_fastapi.client.core import OpenEOCore
 
-from openeo_argoworkflows_api.auth import get_credentials_oidc
 from openeo_argoworkflows_api.jobs import ArgoJobsRegister
 from openeo_argoworkflows_api.files import ArgoFileRegister
 from openeo_argoworkflows_api.settings import ExtendedAppSettings
@@ -64,6 +63,16 @@ def redirect_wellknown():
 api.app.router.add_api_route(
     name="redirect_wellknown",
     path=f"/{client.settings.OPENEO_VERSION}/.well-known/openeo",
+    response_model=None,
+    response_model_exclude_unset=False,
+    response_model_exclude_none=True,
+    methods=["GET"],
+    endpoint=redirect_wellknown,
+)
+
+api.app.router.add_api_route(
+    name="redirect_wellknown",
+    path=f"/openeo/{client.settings.OPENEO_VERSION}/.well-known/openeo",
     response_model=None,
     response_model_exclude_unset=False,
     response_model_exclude_none=True,

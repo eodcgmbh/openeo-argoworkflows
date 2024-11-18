@@ -131,9 +131,8 @@ class ExtendedAuthenticator(Authenticator):
             str(signed_url.query.UserId),
             signed_url.query.Expires,
         )
-        logger.error(f"PARSED URL : {parsed.query}")
+
         parsed_derived = parse.urlparse(derived_url)
-        logger.error(f"DERIVED URL : {parsed_derived.query}")
 
         if parsed_derived.query != parsed.query:
             raise HTTPException(status_code=401, detail="Signed URL not valid.")
@@ -149,8 +148,6 @@ from enum import Enum
 from fastapi import Response
 from pydantic import AnyUrl, BaseModel, Field
 from typing import List, Optional
-from typing_extensions import Annotated
-
 
 from openeo_fastapi.api.types import Link
 
