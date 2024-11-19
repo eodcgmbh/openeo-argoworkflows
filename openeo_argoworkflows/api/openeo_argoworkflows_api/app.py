@@ -86,7 +86,7 @@ api.app.add_middleware(
 )
 
 def redirect_wellknown():
-    return RedirectResponse("/.well-known/openeo", status_code=200)
+    return RedirectResponse("/.well-known/openeo")
 
 api.app.router.add_api_route(
     name="redirect_wellknown",
