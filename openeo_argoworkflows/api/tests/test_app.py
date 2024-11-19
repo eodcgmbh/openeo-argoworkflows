@@ -111,3 +111,10 @@ def test_get_wellknown(mock_settings):
 
     resp = app.get(test_path)
     assert resp.status_code == 200
+
+    test_path = f"openeo/{mock_settings.OPENEO_VERSION}/.well-known/openeo"
+
+    app = TestClient(app_api)
+
+    resp = app.get(test_path)
+    assert resp.status_code == 200
