@@ -4,7 +4,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
 
 from openeo_fastapi.api.app import OpenEOApi
-from openeo_fastapi.api.models import WellKnownOpeneoGetResponse
 from openeo_fastapi.api.types import Billing, Plan, FileFormat, GisDataType
 from openeo_fastapi.client.core import OpenEOCore
 
@@ -85,25 +84,28 @@ api.app.add_middleware(
         "OpenEO-Identifier",
     ],
 )
-   
+
+def redirect_wellknown():
+    return RedirectResponse("/.well-known/openeo", status_code=200)
+
 api.app.router.add_api_route(
     name="redirect_wellknown",
     path=f"/{client.settings.OPENEO_VERSION}/.well-known/openeo",
-    response_model=WellKnownOpeneoGetResponse,
+    response_model=None,
     response_model_exclude_unset=False,
     response_model_exclude_none=True,
     methods=["GET"],
-    endpoint=client.get_well_known,
+    endpoint=redirect_wellknown,
 )
 
 api.app.router.add_api_route(
     name="redirect_wellknown",
     path=f"/openeo/{client.settings.OPENEO_VERSION}/.well-known/openeo",
-    response_model=WellKnownOpeneoGetResponse,
+    response_model=None,
     response_model_exclude_unset=False,
     response_model_exclude_none=True,
     methods=["GET"],
-    endpoint=client.get_well_known,
+    endpoint=redirect_wellknown,
 )
 
 app = api.app
