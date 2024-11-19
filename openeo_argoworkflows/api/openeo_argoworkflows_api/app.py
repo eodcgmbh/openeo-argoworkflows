@@ -1,5 +1,6 @@
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
 
 from openeo_fastapi.api.app import OpenEOApi
@@ -56,6 +57,34 @@ app.router.add_api_route(
 )
 
 api = OpenEOApi(client=client, app=app)
+
+api.app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=[
+        "Accept-Ranges",
+        "Content-Encoding",
+        "Content-Range",
+        "Range",
+        "Link",
+        "Location",
+        "OpenEO-Costs",
+        "OpenEO-Identifier",
+        "Authorization",
+    ],
+    expose_headers=[
+        "Accept-Ranges",
+        "Content-Encoding",
+        "Content-Range",
+        "Link",
+        "Location",
+        "OpenEO-Costs",
+        "OpenEO-Identifier",
+    ],
+)
+
 
 def redirect_wellknown():
     return RedirectResponse("/.well-known/openeo")
