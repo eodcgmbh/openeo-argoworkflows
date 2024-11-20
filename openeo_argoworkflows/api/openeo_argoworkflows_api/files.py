@@ -13,7 +13,7 @@ from os.path import splitext
 from typing import Optional
 from openeo_fastapi.api.models import FilesGetResponse, Link, File
 from openeo_fastapi.client.files import FilesRegister
-from openeo_fastapi.client.auth import User, Authenticator
+from openeo_fastapi.client.auth import User
 
 from openeo_argoworkflows_api.auth import ExtendedAuthenticator
 from openeo_argoworkflows_api.jobs import UserWorkspace
