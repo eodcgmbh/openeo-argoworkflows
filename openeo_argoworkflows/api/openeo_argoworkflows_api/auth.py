@@ -45,6 +45,11 @@ class SignedUrl(BaseModel):
 class ExtendedAuthenticator(Authenticator):
 
     @classmethod
+    async def validate(cls, request: Request):
+        user = super().validate(request.headers.get("Authorization"))
+        return user
+
+    @classmethod
     async def signed_url_or_validate(cls, request: Request):
         if "Authorization" not in request.headers:
             # See if it's a signed url

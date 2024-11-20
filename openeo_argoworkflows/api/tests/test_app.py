@@ -58,9 +58,7 @@ def test_signed_urls(a_mock_user, a_mock_job, mock_settings):
         root_dir=mock_settings.OPENEO_WORKSPACE_ROOT.parent / "out"
     )
 
-
-    # Ensure 'users workspace' exists
-    fs.mkdir(workspace.user_directory)
+    # # Ensure 'job workspace' exists
     fs.mkdir(workspace.job_directory)
     fs.mkdir(workspace.results_directory)
 
@@ -69,7 +67,7 @@ def test_signed_urls(a_mock_user, a_mock_job, mock_settings):
     )
 
     fs.copy(
-        original_file, str(workspace.results_directory)
+        original_file, str(workspace.results_directory / "fake-process-graph.json" )
     )
 
     test_path = f"{mock_settings.OPENEO_PREFIX}/files/{str(a_mock_job.job_id)}/RESULTS/fake-process-graph.json"

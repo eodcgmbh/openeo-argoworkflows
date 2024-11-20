@@ -1,7 +1,9 @@
+import datetime
 import fsspec
+import json
 import re
 
-from fastapi import Depends, HTTPException, Request
+from fastapi import Depends, HTTPException, Request, UploadFile, File as apiFile
 from fastapi.responses import StreamingResponse, Response
 from pathlib import Path
 from pydantic import validator
@@ -9,10 +11,12 @@ from pydantic.dataclasses import dataclass
 from os.path import splitext
 
 from typing import Optional
+from openeo_fastapi.api.models import FilesGetResponse, Link, File
 from openeo_fastapi.client.files import FilesRegister
 from openeo_fastapi.client.auth import User
 
 from openeo_argoworkflows_api.auth import ExtendedAuthenticator
+from openeo_argoworkflows_api.jobs import UserWorkspace
 
 fs = fsspec.filesystem(protocol="file")
 
@@ -172,3 +176,114 @@ class ArgoFileRegister(FilesRegister):
             return StreamingResponse(
                 status_code=200, content=iterfile(absolute_path), media_type=mime_type
             )
+
+
+    def list_files(
+            self,
+            limit: int = None,
+            user: User = Depends(ExtendedAuthenticator.validate)
+    ):
+        """
+        List all files in the workspace
+        """
+        user_workspace = UserWorkspace(
+            root_dir=self.settings.OPENEO_WORKSPACE_ROOT,
+            user_id=str(user.user_id)
+        )
+
+        files = [ File( 
+            path=str(file),
+            size=fs.size(file),
+            modified=fs.modified(file),
+            ) for file  in fs.ls(user_workspace.files_directory) 
+        ]
+
+        if limit:
+            files = files[:limit]
+
+        return FilesGetResponse(
+            files=files,
+            links=[
+                Link(
+                    href="https://eodc.eu/",
+                    rel="about",
+                    type="text/html",
+                    title="Homepage of the service provider",
+                )
+            ],
+        )
+    
+
+    async def upload_file(
+        self,
+        path: str,
+        file: UploadFile = apiFile(...),
+        user: User = Depends(ExtendedAuthenticator.validate)
+    ):
+        
+        space = UserWorkspace(
+            root_dir=self.settings.OPENEO_WORKSPACE_ROOT,
+            user_id=str(user.user_id)
+        )
+        
+        split_path = [ part for part in path.split("/") if "/" in path ]
+
+        if split_path:
+            subdir = "".join( [ part + "/" for part in split_path[:-1] if part ] )
+            upload_dir = space.files_directory / subdir
+            if not fs.exists(upload_dir):
+                fs.mkdir(upload_dir)
+
+        try:
+            upload_dest = space.files_directory / path
+
+            contents = file.file.read()
+            with open(upload_dest, 'wb') as f:
+                f.write(contents)
+        
+        except Exception:
+            raise HTTPException(
+                status_code=501,
+                detail="The server encountered an error trying to upload the file.",
+            )
+        finally:
+                file.file.close()
+        
+        size_bytes = fs.stat(upload_dest)["size"]
+        # Formatted for RFC3339
+        modified_time = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-4] + "Z"
+        
+        return Response(
+            status_code=200,
+            content=json.dumps({
+                "path": path,
+                "size": size_bytes,
+                "modified": modified_time
+            })
+        )
+    
+
+    async def delete_file(
+        self,
+        path: str,
+        user: User = Depends(ExtendedAuthenticator.validate)
+    ):
+        
+        space = UserWorkspace(
+            root_dir=self.settings.OPENEO_WORKSPACE_ROOT,
+            user_id=str(user.user_id)
+        )
+        
+        absolute_path = space.files_directory / path
+
+        if fs.exists(absolute_path):
+            fs.rm_file(absolute_path)
+       
+            return Response(
+                status_code=204,
+                content="The file has been successfully deleted at the back-end."
+            )
+        return Response(
+            status_code=404,
+            content="File not found."
+        )
