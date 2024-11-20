@@ -58,7 +58,6 @@ def test_signed_urls(a_mock_user, a_mock_job, mock_settings):
         root_dir=mock_settings.OPENEO_WORKSPACE_ROOT.parent / "out"
     )
 
-
     # # Ensure 'job workspace' exists
     fs.mkdir(workspace.job_directory)
     fs.mkdir(workspace.results_directory)
