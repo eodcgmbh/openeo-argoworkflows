@@ -44,27 +44,40 @@ class UserWorkspace(BaseModel):
 
     root_dir: Path
     user_id: Union[str, uuid.UUID]
-    job_id: Union[str, uuid.UUID]
+    job_id: Optional[Union[str, uuid.UUID]]
+
+    def ensure(self, path: Path) -> Path:
+        if not path.exists():
+            path.mkdir(parents=True, exist_ok=True)
+        return path
 
     @property
     def user_directory(self):
-        return self.root_dir / str(self.user_id)
+        return self.ensure(self.root_dir / str(self.user_id))
     
     @property
+    def files_directory(self):
+        return self.ensure(self.user_directory / "FILES")
+
+    @property
     def job_directory(self):
-        return self.user_directory / str(self.job_id)
+        if self.job_id:
+            return self.user_directory / str(self.job_id)
     
     @property
     def stac_directory(self):
-        return self.job_directory / "STAC"
+        if self.job_id:
+            return self.job_directory / "STAC"
 
     @property
     def results_directory(self):
-        return self.job_directory / "RESULTS"
+        if self.job_id:
+            return self.job_directory / "RESULTS"
     
     @property
     def results_collection_json(self):
-        return self.stac_directory / f"{self.job_id}_collection.json"
+        if self.job_id:
+            return self.stac_directory / f"{self.job_id}_collection.json"
 
 
 class ArgoJobsRegister(JobsRegister):
@@ -221,7 +234,7 @@ class ArgoJobsRegister(JobsRegister):
         self,
         job_id: uuid.UUID,
         offset: Optional[str] = None,
-        limit: Optional[conint(ge=1)] = None,
+        limit: Optional[int] = None,
         user: User = Depends(Authenticator.validate),
     ):
 
