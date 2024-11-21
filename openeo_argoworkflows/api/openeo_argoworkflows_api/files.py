@@ -217,7 +217,7 @@ class ArgoFileRegister(FilesRegister):
     async def upload_file(
         self,
         path: str,
-        file: UploadFile = apiFile(...),
+        request: Request,
         user: User = Depends(ExtendedAuthenticator.validate)
     ):
         
@@ -237,9 +237,11 @@ class ArgoFileRegister(FilesRegister):
         try:
             upload_dest = space.files_directory / path
 
-            contents = file.file.read()
-            with open(upload_dest, 'wb') as f:
-                f.write(contents)
+            form_data = await request.form()
+            for file in form_data.values():
+                with open(upload_dest, "wb") as f:
+                    while contents := file.file.read(1024 * 1024):
+                        f.write(contents)
         
         except Exception:
             raise HTTPException(
