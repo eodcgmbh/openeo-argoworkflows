@@ -106,11 +106,17 @@ def test_file_upload(user_validate, a_mock_user, mock_settings):
 
     headers = {"Authorization": "Bearer oidc/egi/toetoetoeken"}
 
-    file = {'file': open(original_file, 'rb')}
-    resp = app.put(f"{mock_settings.OPENEO_PREFIX}/files/fake-process-graph.json", headers=headers, files=file)
+    with open(original_file, "rb") as f:
+        resp = app.put(f"{mock_settings.OPENEO_PREFIX}/files/fake-process-graph.json", headers=headers, files={'file': f})
 
     assert resp.status_code == 200
     assert resp.json()["path"] == "fake-process-graph.json"
+
+    expected_file = mock_settings.OPENEO_WORKSPACE_ROOT / f"{str(a_mock_user.user_id)}/FILES/fake-process-graph.json"
+
+    fs = fsspec.filesystem(protocol="file")
+
+    assert fs.exists(expected_file)
 
 
 @patch("openeo_fastapi.client.auth.Authenticator.validate")
