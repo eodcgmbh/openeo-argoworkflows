@@ -1,6 +1,5 @@
 import datetime
 import fsspec
-import logging
 import json
 import re
 
@@ -21,7 +20,6 @@ from openeo_argoworkflows_api.jobs import UserWorkspace
 
 fs = fsspec.filesystem(protocol="file")
 
-logger = logging.getLogger(__name__)
 
 @dataclass
 class ByteRange:
