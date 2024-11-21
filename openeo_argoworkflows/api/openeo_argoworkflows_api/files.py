@@ -248,8 +248,6 @@ class ArgoFileRegister(FilesRegister):
                 status_code=501,
                 detail="The server encountered an error trying to upload the file.",
             )
-        finally:
-                file.file.close()
         
         size_bytes = fs.stat(upload_dest)["size"]
         # Formatted for RFC3339
