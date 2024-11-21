@@ -89,6 +89,7 @@ def test_file_list(user_validate, a_mock_user, mock_settings):
 
     assert resp.status_code == 200
     assert len(resp.json()["files"]) == 2
+    assert str(user_workspace.files_directory) not in resp.json()["files"][0]["path"]
 
 
 @patch("openeo_fastapi.client.auth.Authenticator.validate")

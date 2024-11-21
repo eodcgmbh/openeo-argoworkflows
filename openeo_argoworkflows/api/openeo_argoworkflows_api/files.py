@@ -192,10 +192,12 @@ class ArgoFileRegister(FilesRegister):
             user_id=str(user.user_id)
         )
 
-        files = [ File( 
-            path=str(file),
-            size=fs.size(file),
-            modified=fs.modified(file),
+        files = [ 
+            File(
+                # Path wants to be arelative to the files_directory
+                path=str(file).removeprefix(str(user_workspace.files_directory))[1:],
+                size=fs.size(file),
+                modified=fs.modified(file),
             ) for file  in fs.ls(user_workspace.files_directory) 
         ]
 
