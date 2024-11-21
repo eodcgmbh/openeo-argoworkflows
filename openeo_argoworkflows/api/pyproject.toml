@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "openeo-argoworkflows-api"
-version = "2024.11.7"
+version = "2024.11.8"
 description = ""
 authors = ["sean <sean.hoyal@external.eodc.eu>"]
 readme = "README.md"
