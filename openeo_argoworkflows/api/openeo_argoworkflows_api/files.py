@@ -1,5 +1,6 @@
 import datetime
 import fsspec
+import logging
 import json
 import re
 
@@ -19,6 +20,8 @@ from openeo_argoworkflows_api.auth import ExtendedAuthenticator
 from openeo_argoworkflows_api.jobs import UserWorkspace
 
 fs = fsspec.filesystem(protocol="file")
+
+logger = logging.getLogger(__name__)
 
 @dataclass
 class ByteRange:
@@ -238,20 +241,30 @@ class ArgoFileRegister(FilesRegister):
             upload_dest = space.files_directory / path
 
             form_data = await request.form()
-            for file in form_data.values():
+
+            if len(form_data) == 0:
+                form_data = None
+                request_body = await request.body()
+
                 with open(upload_dest, "wb") as f:
-                    while contents := file.file.read(1024 * 1024):
-                        f.write(contents)
+                    f.write(request_body)
+
+            else:
+                for file in form_data.values():
+
+                    with open(upload_dest, "wb") as f:
+                        while contents := file.file.read(1024 * 1024):
+                            f.write(contents)
+
+            size_bytes = fs.stat(upload_dest)["size"]
+            # Formatted for RFC3339
+            modified_time = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-4] + "Z"
         
         except Exception:
             raise HTTPException(
-                status_code=501,
+                status_code=500,
                 detail="The server encountered an error trying to upload the file.",
             )
-        
-        size_bytes = fs.stat(upload_dest)["size"]
-        # Formatted for RFC3339
-        modified_time = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-4] + "Z"
         
         return Response(
             status_code=200,
