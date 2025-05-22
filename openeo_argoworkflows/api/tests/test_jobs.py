@@ -48,6 +48,3 @@ def test_run_sync_job(a_mock_user, a_mock_job, mock_links, mock_settings):
 
     assert resp.status_code == 502
     
-    # job = get(a_mock_job, a_mock_job.job_id)
-    
-    # assert job.status.value == "queued"

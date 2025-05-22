@@ -86,7 +86,7 @@ class ArgoJobsRegister(JobsRegister):
         super().__init__(settings, links)
 
         self.workflows_service = WorkflowsService(
-            host=settings.ARGO_WORKFLOWS_SERVER, verify_ssl=False, namespace=settings.ARGO_WORKFLOWS_NAMESPACE
+            host=settings.ARGO_WORKFLOWS_SERVER, verify_ssl=False, namespace=settings.ARGO_WORKFLOWS_NAMESPACE, token=settings.ARGO_WORKFLOWS_TOKEN.get_secret_value()
         )
 
         self.q = Queue(
@@ -210,18 +210,18 @@ class ArgoJobsRegister(JobsRegister):
             )
         
         req = WorkflowStopRequest(
-            name=job.workflow_name,
+            name=job.workflowname,
             namespace=self.settings.ARGO_WORKFLOWS_NAMESPACE,
         )
 
         try:
             self.workflows_service.stop_workflow(
-                name = job.workflow_name,
+                name = job.workflowname,
                 req=req,
                 namespace=req.namespace
             )
         except NotFound:
-            logger.warning(f"Could not stop workflow {job.workflow_name} for job {job.job_id}.")
+            logger.warning(f"Could not stop workflow {job.workflowname} for job {job.job_id}.")
         
         job.status = "created"
         engine.modify(modify_object=job)
@@ -230,22 +230,23 @@ class ArgoJobsRegister(JobsRegister):
         )
 
 
-    def debug_job(
+    def logs(
         self,
-        job_id: uuid.UUID,
-        offset: Optional[str] = None,
-        limit: Optional[int] = None,
-        user: User = Depends(Authenticator.validate),
+        job_id: uuid.UUID
     ):
-
+        
         job = engine.get(get_model=ArgoJob, primary_key=job_id)
 
-        if not job.workflow_name:
+        if not job:
+            raise HTTPException(404, "Job not found.")
+
+        if not job.workflowname:
             raise HTTPException(404, "No Job run found for this Job.")
-        
+       
         try:
             workflow = self.workflows_service.get_workflow(
-                name=job.workflow_name
+                name=job.workflowname,
+                namespace=self.settings.ARGO_WORKFLOWS_NAMESPACE\
             )
         except NotFound as exc:
             raise HTTPException(404, "Job run not longer available for this Job.")
@@ -269,13 +270,13 @@ class ArgoJobsRegister(JobsRegister):
                 "grep": None,
                 "selector": None,
             },
-            headers={"Authorization": f"Bearer {self.workflows_service.token}"},
+            headers={"Authorization": f"{self.workflows_service.token}"},
             data=None,
             verify=self.workflows_service.verify_ssl,
         )
 
         logs = []
-        if resp.ok:
+        if resp.status_code == 200:
             raw_logs = resp.content.decode("utf8").split("\n")
             logs = [
                 json.loads(log)["result"]["content"]
@@ -474,6 +475,4 @@ class ArgoJobsRegister(JobsRegister):
                 },
             )
         return response
-
-    
 
