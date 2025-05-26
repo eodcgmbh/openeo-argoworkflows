@@ -8,7 +8,7 @@ packages = [{include = "openeo_argoworkflows_api"}]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
-openeo_fastapi = "^2024.4.2"
+openeo_fastapi = "^2025.5.1"
 hera = "^5.15.1"
 python-multipart = "^0.0.16"
 redis = "5.0.4"
