@@ -12,7 +12,6 @@ dask-gateway = "^2024.1.0"
 openeo-processes-dask = {version = "2025.5.1", extras = ["implementations", "ml"]}
 openeo-pg-parser-networkx = ">=2024.4.0"
 pystac-client = ">=0.8.2,<1"
-xarray = ">=2024.6.0"
 click = ">=8.1.7"
 pydantic = "^2.7.0"
 odc-stac = ">=0.3.3,<1"
