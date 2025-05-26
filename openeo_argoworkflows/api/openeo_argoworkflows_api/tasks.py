@@ -77,6 +77,7 @@ def submit_job(job: ArgoJob):
     response = workflow.create()
 
     job.status = Status.running
+    job.workflowname = response.metadata.name
     modify(job)
 
     return q.enqueue(poll_job_status, job, response.metadata)
