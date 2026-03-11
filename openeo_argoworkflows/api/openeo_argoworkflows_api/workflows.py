@@ -1,7 +1,7 @@
 import json
 
 from hera.workflows import Steps, Workflow, WorkflowsService, Step, Env
-from hera.workflows.models import Template, Container, Metadata, PersistentVolumeClaimVolumeSource, Volume, VolumeMount, SecurityContext
+from hera.workflows.models import Template, Container, Metadata, PersistentVolumeClaimVolumeSource, Volume, VolumeMount, SecurityContext, PodSecurityContext
 
 from openeo_argoworkflows_api.settings import ExtendedAppSettings
 
