@@ -26,7 +26,7 @@ def executor_workflow(service: WorkflowsService, process_graph: dict, dask_profi
         volumes=Volume(
             name="workspaces-volume",
             persistent_volume_claim=PersistentVolumeClaimVolumeSource(
-                claim_name="openeo-workspace"
+                claim_name=settings.OPENEO_WORKSPACE_CLAIMNAME
             )
         ),
         deletion_grace_period_seconds=1800
