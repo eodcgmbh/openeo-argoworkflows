@@ -29,7 +29,7 @@ def executor_workflow(service: WorkflowsService, process_graph: dict, dask_profi
                 claim_name=settings.OPENEO_WORKSPACE_CLAIMNAME
             )
         ),
-        pod_security_context = SecurityContext(fsGroup=settings.OPENEO_WORKSPACE_SECURITY_GROUP)
+        pod_security_context = SecurityContext(fsGroup=settings.OPENEO_WORKSPACE_SECURITY_GROUP),
         deletion_grace_period_seconds=1800
     ) as w:
         with Steps(name="process"):
