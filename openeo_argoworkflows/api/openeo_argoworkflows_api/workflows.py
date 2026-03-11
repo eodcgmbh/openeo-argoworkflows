@@ -30,6 +30,7 @@ def executor_workflow(service: WorkflowsService, process_graph: dict, dask_profi
             )
         ),
         security_context = SecurityContext(
+            runAsUser=1000,
             runAsGroup=settings.OPENEO_WORKSPACE_SECURITY_GROUP
         ),
         deletion_grace_period_seconds=1800
@@ -58,6 +59,7 @@ def executor_workflow(service: WorkflowsService, process_graph: dict, dask_profi
                             )
                         ],
                         security_context = SecurityContext(
+                            runAsUser=1000,
                             runAsGroup=settings.OPENEO_WORKSPACE_SECURITY_GROUP
                         ),
                     )
