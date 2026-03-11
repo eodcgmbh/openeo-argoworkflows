@@ -8,6 +8,7 @@ class ExtendedAppSettings(AppSettings):
         
     OPENEO_WORKSPACE_ROOT: Optional[Path]
     OPENEO_WORKSPACE_CLAIMNAME: Optional[str]
+    OPENEO_WORKSPACE_SECURITY_GROUP: Optional[int]
     OPENEO_EXECUTOR_IMAGE: Optional[str]
     OPENEO_SIGN_KEY: Optional[str]
 

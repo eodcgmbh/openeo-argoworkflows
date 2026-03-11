@@ -1,7 +1,7 @@
 import json
 
 from hera.workflows import Steps, Workflow, WorkflowsService, Step, Env
-from hera.workflows.models import Template, Container, Metadata, PersistentVolumeClaimVolumeSource, Volume, VolumeMount
+from hera.workflows.models import Template, Container, Metadata, PersistentVolumeClaimVolumeSource, SecurityContext, Volume, VolumeMount
 
 from openeo_argoworkflows_api.settings import ExtendedAppSettings
 
@@ -29,6 +29,7 @@ def executor_workflow(service: WorkflowsService, process_graph: dict, dask_profi
                 claim_name=settings.OPENEO_WORKSPACE_CLAIMNAME
             )
         ),
+        pod_security_context = SecurityContext(fsGroup=settings.OPENEO_WORKSPACE_SECURITY_GROUP),
         deletion_grace_period_seconds=1800
     ) as w:
         with Steps(name="process"):
@@ -53,10 +54,10 @@ def executor_workflow(service: WorkflowsService, process_graph: dict, dask_profi
                                 name="workspaces-volume",
                                 mount_path=str(settings.OPENEO_WORKSPACE_ROOT)
                             )
-                        ]
+                        ],
+                        security_context=SecurityContext(runAsGroup=settings.OPENEO_WORKSPACE_SECURITY_GROUP)
                     )
                 )
             )
 
     return w
-
