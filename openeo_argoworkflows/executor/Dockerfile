@@ -1,4 +1,4 @@
-FROM python:3.11-slim as base
+FROM python:3.11-slim-bookworm AS base
 
 WORKDIR /opt
 ARG POETRY_VERSION="1.8.3"
@@ -26,6 +26,9 @@ WORKDIR /opt/openeo_argoworkflows_executor
 
 COPY --from=base --chown=${USER_ID}:${GROUP_ID} /opt/openeo_argoworkflows_executor/.venv /opt/openeo_argoworkflows_executor/.venv
 COPY --chown=${USER_ID}:${GROUP_ID} ./openeo_argoworkflows_executor /opt/openeo_argoworkflows_executor
+
+RUN apt update -qy \ 
+    && apt install -qy --no-install-recommends libexpat1
 
 # Need to update the symlinks to the python interpreter in the venv to the new location.
 RUN ln -sf /usr/local/bin/python /opt/openeo_argoworkflows_executor/.venv/bin/python \
