@@ -49,7 +49,7 @@ def load_collection(
         raise ValueError("Provided spatial extent could not be interpreted.")
 
     query_dict["datetime"] = tuple(
-        [str(time.root) for time in temporal_extent if time != 'None']
+        [time.root.isoformat() for time in temporal_extent if time != 'None']
     )
 
     if "STAC_API_URL" not in os.environ:
