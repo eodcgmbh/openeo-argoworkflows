@@ -7,6 +7,7 @@ from openeo_fastapi.client.settings import AppSettings
 class ExtendedAppSettings(AppSettings):
         
     OPENEO_WORKSPACE_ROOT: Optional[Path]
+    OPENEO_MOUNT_PATH: Optional[str] = "/eodc"
     OPENEO_WORKSPACE_CLAIMNAME: Optional[str]
     OPENEO_WORKSPACE_SECURITY_GROUP: Optional[int]
     OPENEO_EXECUTOR_IMAGE: Optional[str]
