@@ -19,6 +19,7 @@ RUN poetry install --only main
 ########################################################################################################################
 FROM python:3.11-slim-bookworm AS prod
 
+ENV USERNAME=executor
 ARG USER_ID=1000
 ARG GROUP_ID=1000
 
@@ -34,12 +35,15 @@ RUN apt update -qy \
 RUN ln -sf /usr/local/bin/python /opt/openeo_argoworkflows_executor/.venv/bin/python \
     && ln -sf /usr/local/bin/python3 /opt/openeo_argoworkflows_executor/.venv/bin/python3 \
     && ln -sf /usr/local/bin/python3.9 /opt/openeo_argoworkflows_executor/.venv/bin/python3.9 \
-    && groupadd -g ${GROUP_ID} -o executor \
-    && useradd -m -u ${USER_ID} -g ${GROUP_ID} -o -s /bin/bash executor
+    && addgroup --gid ${GROUP_ID} ${USERNAME} \
+    && adduser --disabled-password --gecos '' \
+        --uid ${USER_ID} \
+        --gid ${GROUP_ID} \
+        ${USERNAME}
 
 ENV VIRTUAL_ENV=/opt/openeo_argoworkflows_executor/.venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-USER ${USER_ID}
+USER ${USERNAME}
 
 CMD ["openeo_executor"]

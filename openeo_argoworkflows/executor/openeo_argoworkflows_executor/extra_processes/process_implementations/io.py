@@ -3,6 +3,7 @@ import numpy as np
 import os
 import pyproj
 import pystac_client
+import rioxarray
 import xarray as xr
 
 from odc.stac import stac_load
@@ -108,6 +109,8 @@ def load_collection(
         **kwargs
     ).to_array(dim='bands')
 
+    lazy_xarray.rio.write_crs(crs)
+
     # Add some sort of clipping here to the original bounding box that was requested.
     return filter_bbox(lazy_xarray, extent=spatial_extent)
 
@@ -142,7 +145,7 @@ def save_result(
     # TODO Some nicer way to handle the user workspace
     destination = Path(os.environ["OPENEO_RESULTS_PATH"]) / f"{_id}.nc"
     dim = data.openeo.band_dims[0] if data.openeo.band_dims else None
-    crs = data.crs
+    crs = data.rio.crs
     
     data.attrs = {}
     data.attrs["crs"] = str(crs)

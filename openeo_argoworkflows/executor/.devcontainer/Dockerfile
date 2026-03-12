@@ -14,4 +14,8 @@ RUN apt update -qy && \
     apt install -qy --no-install-recommends \
         git
 
+ENV USERNAME=executor
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+
 WORKDIR /openeo_argoworkflows_executor
