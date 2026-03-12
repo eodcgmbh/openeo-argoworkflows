@@ -54,13 +54,12 @@ def executor_workflow(service: WorkflowsService, process_graph: dict, dask_profi
                         volume_mounts=[
                             VolumeMount(
                                 name="workspaces-volume",
-                                mount_path=str(settings.OPENEO_WORKSPACE_ROOT)
+                                mount_path=settings.OPENEO_MOUNT_PATH
                             )
                         ],
                         security_context = SecurityContext(
                             runAsUser=1000,
-                            runAsGroup=settings.OPENEO_WORKSPACE_SECURITY_GROUP,
-                            fsGroup=settings.OPENEO_WORKSPACE_SECURITY_GROUP
+                            runAsGroup=settings.OPENEO_WORKSPACE_SECURITY_GROUP
                         ),
                     )
                 )
