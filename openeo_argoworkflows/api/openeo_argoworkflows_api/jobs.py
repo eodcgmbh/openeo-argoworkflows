@@ -54,7 +54,7 @@ class UserWorkspace(BaseModel):
     @property
     def user_directory(self):
         return self.ensure(self.root_dir / str(self.user_id))
-    
+
     @property
     def files_directory(self):
         return self.ensure(self.user_directory / "FILES")
@@ -63,7 +63,7 @@ class UserWorkspace(BaseModel):
     def job_directory(self):
         if self.job_id:
             return self.user_directory / str(self.job_id)
-    
+
     @property
     def stac_directory(self):
         if self.job_id:
@@ -73,7 +73,7 @@ class UserWorkspace(BaseModel):
     def results_directory(self):
         if self.job_id:
             return self.job_directory / "RESULTS"
-    
+
     @property
     def results_collection_json(self):
         if self.job_id:
@@ -86,14 +86,15 @@ class ArgoJobsRegister(JobsRegister):
         super().__init__(settings, links)
 
         self.workflows_service = WorkflowsService(
-            host=settings.ARGO_WORKFLOWS_SERVER, verify_ssl=False, namespace=settings.ARGO_WORKFLOWS_NAMESPACE, token=settings.ARGO_WORKFLOWS_TOKEN.get_secret_value()
+            host=settings.ARGO_WORKFLOWS_SERVER,
+            verify_ssl=False,
+            namespace=settings.ARGO_WORKFLOWS_NAMESPACE,
+            token=settings.ARGO_WORKFLOWS_TOKEN.get_secret_value(),
         )
 
         self.q = Queue(
-            connection=Redis(
-            host=settings.REDIS_HOST,
-            port=settings.REDIS_PORT
-        ))
+            connection=Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT)
+        )
 
     def create_job(
         self, body: JobsRequest, user: User = Depends(Authenticator.validate)
@@ -130,7 +131,9 @@ class ArgoJobsRegister(JobsRegister):
         except IntegrityError:
             raise HTTPException(
                 status_code=500,
-                detail=Error(code="Internal", message=f"The job {job.job_id} already exists."),
+                detail=Error(
+                    code="Internal", message=f"The job {job.job_id} already exists."
+                ),
             )
 
         return Response(
@@ -142,24 +145,24 @@ class ArgoJobsRegister(JobsRegister):
                 "access-control-expose-headers": "Accept-Ranges, Content-Encoding, Content-Range, Link, Location, OpenEO-Costs, OpenEO-Identifier",
             },
         )
-    
+
     def start_job(
         self, job_id: uuid.UUID, user: User = Depends(Authenticator.validate)
     ):
-        
+
         job = engine.get(get_model=ArgoJob, primary_key=job_id)
 
         if not job:
             raise HTTPException(
-                    status_code=404,
-                    detail="Job was not found for this ID",
-                )
-        
+                status_code=404,
+                detail="Job was not found for this ID",
+            )
+
         if (job.status == Status.queued) or (job.status == Status.running):
-                raise HTTPException(
-                    status_code=400,
-                    detail="Job is already in queue or running, and cannot be started again.",
-                )
+            raise HTTPException(
+                status_code=400,
+                detail="Job is already in queue or running, and cannot be started again.",
+            )
 
         job_workspace = (
             self.settings.OPENEO_WORKSPACE_ROOT
@@ -170,7 +173,8 @@ class ArgoJobsRegister(JobsRegister):
             fs.mkdir(job_workspace)
         except Exception as e:
             raise HTTPException(
-                status_code=500, detail=f"Could not create workspace for the current job."
+                status_code=500,
+                detail=f"Could not create workspace for the current job.",
             )
 
         job.status = "queued"
@@ -188,19 +192,17 @@ class ArgoJobsRegister(JobsRegister):
             status_code=500,
             detail="The workflow server could not run the job at this time. Please try again later.",
         )
-        
+
     def delete_job(
         self, job_id: uuid.UUID, user: User = Depends(Authenticator.validate)
     ):
-        
+
         return Response(
             status_code=202,
             content="The resource has been deleted successfully.",
         )
-    
-    def stop_job(
-        self, job_id: uuid.UUID, user: User = Depends(Authenticator.validate)
-    ):
+
+    def stop_job(self, job_id: uuid.UUID, user: User = Depends(Authenticator.validate)):
         job = engine.get(get_model=ArgoJob, primary_key=job_id)
 
         if (job.status != Status.queued) and (job.status != Status.running):
@@ -208,7 +210,7 @@ class ArgoJobsRegister(JobsRegister):
                 status_code=400,
                 detail="The job isn't running or queued and therefore could not be canceled",
             )
-        
+
         req = WorkflowStopRequest(
             name=job.workflowname,
             namespace=self.settings.ARGO_WORKFLOWS_NAMESPACE,
@@ -216,25 +218,21 @@ class ArgoJobsRegister(JobsRegister):
 
         try:
             self.workflows_service.stop_workflow(
-                name = job.workflowname,
-                req=req,
-                namespace=req.namespace
+                name=job.workflowname, req=req, namespace=req.namespace
             )
         except NotFound:
-            logger.warning(f"Could not stop workflow {job.workflowname} for job {job.job_id}.")
-        
+            logger.warning(
+                f"Could not stop workflow {job.workflowname} for job {job.job_id}."
+            )
+
         job.status = "created"
         engine.modify(modify_object=job)
         return Response(
             status_code=204, content="Process the job has been successfully canceled."
         )
 
+    def logs(self, job_id: uuid.UUID):
 
-    def logs(
-        self,
-        job_id: uuid.UUID
-    ):
-        
         job = engine.get(get_model=ArgoJob, primary_key=job_id)
 
         if not job:
@@ -242,11 +240,10 @@ class ArgoJobsRegister(JobsRegister):
 
         if not job.workflowname:
             raise HTTPException(404, "No Job run found for this Job.")
-       
+
         try:
             workflow = self.workflows_service.get_workflow(
-                name=job.workflowname,
-                namespace=self.settings.ARGO_WORKFLOWS_NAMESPACE\
+                name=job.workflowname, namespace=self.settings.ARGO_WORKFLOWS_NAMESPACE
             )
         except NotFound as exc:
             raise HTTPException(404, "Job run not longer available for this Job.")
@@ -254,10 +251,12 @@ class ArgoJobsRegister(JobsRegister):
         resp = requests.get(
             url=urljoin(
                 self.workflows_service.host, "api/v1/workflows/{namespace}/{name}/log"
-            ).format(name=workflow.metadata.name, namespace=workflow.metadata.namespace),
+            ).format(
+                name=workflow.metadata.name, namespace=workflow.metadata.namespace
+            ),
             params={
                 "podName": None,
-                "logOptions.container": "main",
+                "logOptions.container": "executor",
                 "logOptions.follow": None,
                 "logOptions.previous": None,
                 "logOptions.sinceSeconds": None,
@@ -285,13 +284,14 @@ class ArgoJobsRegister(JobsRegister):
             ]
 
         return JobsGetLogsResponse(
-                logs=logs,
-                links=[],
-            ).dict(exclude_none=True)
-
+            logs=logs,
+            links=[],
+        ).dict(exclude_none=True)
 
     def get_results(
-        self, job_id: uuid.UUID, user: User = Depends(ExtendedAuthenticator.signed_url_or_validate)
+        self,
+        job_id: uuid.UUID,
+        user: User = Depends(ExtendedAuthenticator.signed_url_or_validate),
     ):
         """Get the results for the BatchJob.
 
@@ -308,7 +308,9 @@ class ArgoJobsRegister(JobsRegister):
         job = engine.get(get_model=ArgoJob, primary_key=job_id)
 
         wspace = UserWorkspace(
-            root_dir=self.settings.OPENEO_WORKSPACE_ROOT, user_id=str(user.user_id), job_id=str(job.job_id)
+            root_dir=self.settings.OPENEO_WORKSPACE_ROOT,
+            user_id=str(user.user_id),
+            job_id=str(job.job_id),
         )
 
         stac_collection = Collection.from_file(str(wspace.results_collection_json))
@@ -318,7 +320,7 @@ class ArgoJobsRegister(JobsRegister):
         if self.settings.API_TLS:
             API_SELF_URL = f"https://{self.settings.API_DNS}"
         else:
-            API_SELF_URL= f"http://{self.settings.API_DNS}"
+            API_SELF_URL = f"http://{self.settings.API_DNS}"
 
         self_url = f"{self.settings.OPENEO_PREFIX}/jobs/{str(job.job_id)}/results"
 
@@ -335,7 +337,7 @@ class ArgoJobsRegister(JobsRegister):
                 url=self_url,
                 key_name="OPENEO_SIGN_KEY",
                 user_id=user.user_id,
-                expiration_time=expiry
+                expiration_time=expiry,
             )
         )
         new_links.append(StacLink(rel="canonical", target=canonical_url))
@@ -347,30 +349,36 @@ class ArgoJobsRegister(JobsRegister):
             relative_path = "/{job_id}/RESULTS/{file}".format(
                 user_id=user, job_id=job_id, file=file_name
             )
-            path ="{prefix}/files{path}".format(prefix=self.settings.OPENEO_PREFIX, path=relative_path)
+            path = "{prefix}/files{path}".format(
+                prefix=self.settings.OPENEO_PREFIX, path=relative_path
+            )
 
             value.href = API_SELF_URL.__add__(
                 ExtendedAuthenticator.sign_url(
                     url=path,
                     key_name="OPENEO_SIGN_KEY",
                     user_id=user.user_id,
-                    expiration_time=expiry
+                    expiration_time=expiry,
                 )
             )
 
         stac_collection.summaries.add(
-            "datetime", {
+            "datetime",
+            {
                 "minimum": str(stac_collection.extent.temporal.intervals[0][0]),
-                "maximum": str(stac_collection.extent.temporal.intervals[0][1])
-            }
+                "maximum": str(stac_collection.extent.temporal.intervals[0][1]),
+            },
         )
 
         stac_collection.extra_fields.update({"openeo:status": "finished"})
 
         return stac_collection.to_dict()
-    
 
-    def process_sync_job(self, body: JobsRequest = JobsRequest(), user: User = Depends(Authenticator.validate)):
+    def process_sync_job(
+        self,
+        body: JobsRequest = JobsRequest(),
+        user: User = Depends(Authenticator.validate),
+    ):
         """Start the processing of a synchronous Job.
 
         Args:
@@ -379,7 +387,7 @@ class ArgoJobsRegister(JobsRegister):
 
         Raises:
             HTTPException: Raises an exception with relevant status code and descriptive message of failure.
-                        
+
         """
 
         # Ensure there is a record of this sync job run
@@ -398,7 +406,7 @@ class ArgoJobsRegister(JobsRegister):
             description=f"Synchronous execution of process graph {body.process.id}.",
             user_id=user.user_id,
             created=datetime.datetime.now(),
-            synchronous=True
+            synchronous=True,
         )
 
         engine.create(create_object=job)
@@ -415,13 +423,18 @@ class ArgoJobsRegister(JobsRegister):
             elif job.status == Status.error:
                 raise HTTPException(
                     status_code=500,
-                    detail=Error(code="InternalServerError", message="Failed to process. Submit as batch job to view logs."),
+                    detail=Error(
+                        code="InternalServerError",
+                        message="Failed to process. Submit as batch job to view logs.",
+                    ),
                 )
             elif job.status == Status.running:
                 time.sleep(15)
 
         wspace = UserWorkspace(
-            root_dir=self.settings.OPENEO_WORKSPACE_ROOT, user_id=str(user.user_id), job_id=str(job.job_id)
+            root_dir=self.settings.OPENEO_WORKSPACE_ROOT,
+            user_id=str(user.user_id),
+            job_id=str(job.job_id),
         )
 
         files = [file for file in wspace.results_directory.glob(f"*") if file.is_file()]
@@ -432,10 +445,11 @@ class ArgoJobsRegister(JobsRegister):
                 detail=f"No files to return for request.",
             )
         elif len(files) == 1:
+
             def single_file_iterator(file_path):
                 with open(file_path, "rb") as file:
                     yield from file
-            
+
             file = files[0]
 
             # TODO Improve, maybe move general functionality of mimetypes to openeo-fastapi
@@ -443,7 +457,7 @@ class ArgoJobsRegister(JobsRegister):
             mime_types = {
                 ".tif": "image/tiff; application=geotiff; profile=cloud-optimized",
                 ".nc": "application/netcdf",
-                ".json": "application/json"
+                ".json": "application/json",
             }
             mime_type = mime_types[extention]
 
@@ -475,4 +489,3 @@ class ArgoJobsRegister(JobsRegister):
                 },
             )
         return response
-

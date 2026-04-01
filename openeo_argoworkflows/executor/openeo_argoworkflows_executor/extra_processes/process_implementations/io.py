@@ -137,8 +137,8 @@ def save_result(
 
     import uuid
 
-    logging.info("DATA ", data)
-    logging.info("DATA ATTRS ", data.attrs)
+    logging.info("DATA %s", data)
+    logging.info("DATA ATTRS %s", data.attrs)
 
     _id = str(uuid.uuid4())
     # TODO A nice abstraction to split the xarray into the respective output datasets
