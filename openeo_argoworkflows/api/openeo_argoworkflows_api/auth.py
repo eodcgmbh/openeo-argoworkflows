@@ -234,7 +234,7 @@ def get_credentials_oidc() -> Response:
         providers=[
             Provider(
                 id=settings.OIDC_ORGANISATION,
-                title="EGI Check-in",
+                title=settings.OIDC_PROVIDER_TITLE,
                 issuer=settings.OIDC_URL,
                 scopes=[
                     "openid",
@@ -244,7 +244,7 @@ def get_credentials_oidc() -> Response:
                 ],
                 default_clients=[
                     DefaultClient(
-                        id="openeo-platform-default-client",
+                        id=settings.OIDC_CLIENT_ID,
                         redirect_urls=[
                             "https://editor.openeo.cloud",
                             "https://editor.openeo.org",
