@@ -26,3 +26,6 @@ class ExtendedAppSettings(AppSettings):
 
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
+
+    OIDC_PROVIDER_TITLE: str = "EGI Check-in"
+    OIDC_CLIENT_ID: str = "openeo-platform-default-client"
