@@ -27,6 +27,3 @@ class ExtendedAppSettings(AppSettings):
 
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
-
-    OIDC_PROVIDER_TITLE: Optional[str]
-    OIDC_CLIENT_ID: Optional[str]
