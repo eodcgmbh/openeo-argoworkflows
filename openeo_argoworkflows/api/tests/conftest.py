@@ -7,7 +7,6 @@ import uuid
 
 from fakeredis import FakeStrictRedis
 from pathlib import Path
-from openeo_fastapi.client.auth import User
 from openeo_fastapi.api.types import Link
 from unittest.mock import patch
 
@@ -15,7 +14,7 @@ fs = fsspec.filesystem(protocol="file")
 
 __version__ = importlib.metadata.version("openeo_fastapi")
 
-OPENEO_WORKSPACE_ROOT = "/openeo-argoworkflows-api/tests/data/out"
+OPENEO_WORKSPACE_ROOT = Path(__file__).parent / "data" / "out"
 ALEMBIC_DIR = Path(__file__).parent.parent / "openeo_argoworkflows_api/psql/"
 
 SETTINGS_DICT = {
@@ -38,11 +37,14 @@ for k, v in SETTINGS_DICT.items():
     os.environ[k] = str(v)
 
 from openeo_argoworkflows_api.jobs import ArgoJob
+from openeo_argoworkflows_api.psql.models import ExtendedUser
 from openeo_argoworkflows_api.settings import ExtendedAppSettings
 
 def mock_user():
-    return User(
-        user_id = uuid.uuid4(), oidc_sub="testuser@testing.eu"
+    return ExtendedUser(
+        user_id=uuid.uuid4(),
+        oidc_sub="testuser@testing.eu",
+        roles=["early_adopter", "platform_developer"],
     )
     
 def mock_job():
@@ -146,6 +148,9 @@ def mock_auth(status_code=200):
                 "urn:mace:egi.eu:group:vo.openeo.cloud:role=early_adopter#aai.egi.eu",
                 "urn:mace:egi.eu:group:vo.openeo.cloud:role=platform_developer#aai.egi.eu",
             ],
+            "realm_access": {
+                "roles": ["early_adopter", "platform_developer"],
+            },
             "sub": user.oidc_sub,
         }
     ).encode("utf-8")

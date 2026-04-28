@@ -25,5 +25,10 @@ class ExtendedAppSettings(AppSettings):
     DASK_WORKER_LIMIT: str = "6"
     DASK_CLUSTER_IDLE_TIMEOUT: str = "3600"
 
+    DASK_PROFILES: Optional[str] = None
+    DASK_ROLE_PROFILE_MAPPING: Optional[str] = None
+
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
+
+    OIDC_ROLES_CLAIM: Optional[str] = None

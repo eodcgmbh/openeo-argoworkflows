@@ -3,14 +3,17 @@ import datetime
 import hashlib
 import hmac
 import logging
+import uuid
 
 from fastapi import HTTPException, Request
-from openeo_fastapi.client.auth import Authenticator, User
+from openeo_fastapi.client.auth import Authenticator, IssuerHandler, User
 from openeo_fastapi.client.psql import engine
+from openeo_fastapi.client.psql.engine import Filter, create, get_first_or_default, modify
 from pydantic import BaseModel, ValidationError, validator
 from urllib import parse
 from uuid import UUID
 
+from openeo_argoworkflows_api.psql.models import ExtendedUser
 from openeo_argoworkflows_api.settings import ExtendedAppSettings
 
 logger = logging.getLogger("")
@@ -42,11 +45,78 @@ class SignedUrl(BaseModel):
 
 
 
+def _parse_role_value(value: str) -> str | None:
+    """Return the role name from a value, handling both plain strings and EGI URNs.
+
+    EGI AAI encodes roles inside URN strings of the form:
+        urn:mace:egi.eu:group:<vo>:role=<name>#<authority>
+    For any URN containing ':role=', the role name is extracted.
+    Plain strings (e.g. Keycloak) are returned unchanged.
+    Returns None when a URN is present but contains no ':role=' segment.
+    """
+    if value.startswith("urn:"):
+        if ":role=" not in value:
+            return None
+        role_segment = value.split(":role=", 1)[1]
+        return role_segment.split("#")[0]
+    return value
+
+
+def _extract_roles_from_userinfo(userinfo: dict, claim_path: str) -> list:
+    """Walk a dot-separated claim path into userinfo and return a list of role strings.
+
+    Handles two formats transparently:
+    - Plain list (Keycloak): claim_path='realm_access.roles' -> ['early_adopter', ...]
+    - EGI URN list: claim_path='eduperson_entitlement' ->
+        'urn:mace:egi.eu:group:vo.openeo.cloud:role=early_adopter#aai.egi.eu' -> 'early_adopter'
+
+    URN entries without a ':role=' segment are silently skipped.
+    Returns an empty list when the path is missing or the value is not a list.
+    """
+    obj = userinfo
+    for key in claim_path.split("."):
+        obj = obj.get(key) if isinstance(obj, dict) else None
+    if not isinstance(obj, list):
+        return []
+    roles = []
+    for item in obj:
+        role = _parse_role_value(str(item))
+        if role is not None:
+            roles.append(role)
+    return roles
+
+
 class ExtendedAuthenticator(Authenticator):
 
     @classmethod
     async def validate(cls, request: Request):
-        user = super().validate(request.headers.get("Authorization"))
+        authorization = request.headers.get("Authorization")
+        settings = ExtendedAppSettings()
+
+        policies = None
+        if settings.OIDC_POLICIES:
+            policies = settings.OIDC_POLICIES
+
+        issuer = IssuerHandler(issuer_uri=str(settings.OIDC_URL), policies=policies)
+        user_info = issuer.validate_token(authorization)
+
+        roles = []
+        if settings.OIDC_ROLES_CLAIM:
+            roles = _extract_roles_from_userinfo(user_info, settings.OIDC_ROLES_CLAIM)
+
+        found_user = get_first_or_default(
+            ExtendedUser, Filter(column_name="oidc_sub", value=user_info["sub"])
+        )
+
+        if found_user:
+            found_user.roles = roles
+            modify(found_user)
+            return found_user
+
+        user = ExtendedUser(
+            user_id=uuid.uuid4(), oidc_sub=user_info["sub"], roles=roles
+        )
+        create(create_object=user)
         return user
 
     @classmethod
@@ -62,8 +132,8 @@ class ExtendedAuthenticator(Authenticator):
                     detail="Can't authorize. Neither Authorization header, or signed url have been provided.",
                 )
         else:
-           user = super().validate(request.headers.get("Authorization"))
-           return user
+            user = await cls.validate(request)
+            return user
         
     
     @classmethod
@@ -84,8 +154,7 @@ class ExtendedAuthenticator(Authenticator):
         stripped_url = url.strip()
         parsed_url = parse.urlsplit(stripped_url)
         query_params = parse.parse_qs(parsed_url.query, keep_blank_values=True)
-        epoch = datetime.datetime(1970, 1, 1, 0, 0)
-        expiration_timestamp = int((expiration_time - epoch).total_seconds())
+        expiration_timestamp = int(expiration_time.timestamp())
         
         base64_key = settings.__getattribute__(key_name).__str__()
         decoded_key = base64.urlsafe_b64decode(base64_key)
@@ -143,7 +212,7 @@ class ExtendedAuthenticator(Authenticator):
             raise HTTPException(status_code=401, detail="Signed URL not valid.")
         else:
             user = engine.get(
-                get_model=User,
+                get_model=ExtendedUser,
                 primary_key=signed_url.query.UserId,
             )
             return user

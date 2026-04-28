@@ -2459,14 +2459,14 @@ tests = ["boto3", "boto3 (>=1.37.38,<1.38.0)", "botocore", "botocore (>=1.37.38,
 
 [[package]]
 name = "openeo-fastapi"
-version = "2026.4.2"
+version = "2026.4.3"
 description = "FastApi implementation conforming to the OpenEO Api specification."
 category = "main"
 optional = false
 python-versions = "<3.12,>=3.10"
 files = [
-    {file = "openeo_fastapi-2026.4.2-py3-none-any.whl", hash = "sha256:40f74a67711b09031a26cb8e7c32f26e0e52d94587f8b0bacd9ba68ce59186e4"},
-    {file = "openeo_fastapi-2026.4.2.tar.gz", hash = "sha256:82eda739d9c087f61a7ad44ed0131bba821423c532bbfb4d7a2d9eb6e6295105"},
+    {file = "openeo_fastapi-2026.4.3-py3-none-any.whl", hash = "sha256:57681bea17bce107ea5b4585ee738b77d2339d3c59713628f7f9e309045a4f3c"},
+    {file = "openeo_fastapi-2026.4.3.tar.gz", hash = "sha256:307b1d23d19559c19c0f8301294ef1dc6b452a09ce111969d3c5a9b2ea05826e"},
 ]
 
 [package.dependencies]
@@ -4986,4 +4986,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "b13f38145215bb4b3f56b54909e8f8e0e14dfa0595703000045646a8958eb42e"
+content-hash = "5bd9be88ab521b983a976dc38526e5abd036e73b316189335d25c0bba560030c"
