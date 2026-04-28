@@ -3,6 +3,7 @@ from openeo_fastapi.client.auth import User
 from openeo_fastapi.client.jobs import Job
 from openeo_fastapi.client.psql.settings import BASE
 from openeo_fastapi.client.psql.models import *
+from pydantic import validator
 from sqlalchemy import Column as _Column
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import column_property as _column_property
@@ -18,6 +19,10 @@ class ExtendedUser(User):
 
     roles: List[str] = []
     """Roles assigned to the user, sourced from the OIDC userinfo response."""
+
+    @validator("roles", pre=True, always=True)
+    def coerce_none_to_empty_list(cls, v):
+        return v if v is not None else []
 
     @classmethod
     def get_orm(cls):
