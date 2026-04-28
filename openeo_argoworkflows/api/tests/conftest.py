@@ -14,7 +14,7 @@ fs = fsspec.filesystem(protocol="file")
 
 __version__ = importlib.metadata.version("openeo_fastapi")
 
-OPENEO_WORKSPACE_ROOT = "/openeo-argoworkflows-api/tests/data/out"
+OPENEO_WORKSPACE_ROOT = Path(__file__).parent / "data" / "out"
 ALEMBIC_DIR = Path(__file__).parent.parent / "openeo_argoworkflows_api/psql/"
 
 SETTINGS_DICT = {

@@ -154,8 +154,7 @@ class ExtendedAuthenticator(Authenticator):
         stripped_url = url.strip()
         parsed_url = parse.urlsplit(stripped_url)
         query_params = parse.parse_qs(parsed_url.query, keep_blank_values=True)
-        epoch = datetime.datetime(1970, 1, 1, 0, 0)
-        expiration_timestamp = int((expiration_time - epoch).total_seconds())
+        expiration_timestamp = int(expiration_time.timestamp())
         
         base64_key = settings.__getattribute__(key_name).__str__()
         decoded_key = base64.urlsafe_b64decode(base64_key)

@@ -1,17 +1,27 @@
 import fsspec
 import json
-from unittest.mock import patch
+import pytest
+from unittest.mock import patch, AsyncMock
 
+from fastapi import Request
 from fastapi.testclient import TestClient
 from openeo_fastapi.client.psql.engine import create
 from uuid import uuid4
 
 from openeo_argoworkflows_api.app import app as app_api
+from openeo_argoworkflows_api.auth import ExtendedAuthenticator
 from openeo_argoworkflows_api.jobs import UserWorkspace
 
-@patch("openeo_fastapi.client.auth.Authenticator.validate")
+
+@pytest.fixture(autouse=True)
+def clear_dependency_overrides():
+    yield
+    app_api.dependency_overrides.clear()
+
+
+@patch("openeo_argoworkflows_api.auth.ExtendedAuthenticator.validate")
 def test_file_download(user_validate, a_mock_user, mock_settings):
-    
+
     user_validate.return_value = a_mock_user
 
     fs = fsspec.filesystem(protocol="file")
@@ -43,7 +53,7 @@ def test_file_download(user_validate, a_mock_user, mock_settings):
     assert resp.status_code == 200
 
 def test_file_formats(mock_settings):
-    
+
     app = TestClient(app_api)
 
     resp = app.get(f"{mock_settings.OPENEO_PREFIX}/file_formats")
@@ -55,10 +65,12 @@ def test_file_formats(mock_settings):
     assert len(json_out["output"]) == 1
 
 
-@patch("openeo_fastapi.client.auth.Authenticator.validate")
-def test_file_list(user_validate, a_mock_user, mock_settings):
-    
-    user_validate.return_value = a_mock_user
+def test_file_list(a_mock_user, mock_settings):
+
+    async def _mock_validate(request: Request):
+        return a_mock_user
+
+    app_api.dependency_overrides[ExtendedAuthenticator.validate] = _mock_validate
 
     fs = fsspec.filesystem(protocol="file")
 
@@ -66,7 +78,6 @@ def test_file_list(user_validate, a_mock_user, mock_settings):
 
     app = TestClient(app_api)
 
-    # Ensure 'users workspace' exists
     user_workspace = UserWorkspace(
         root_dir=mock_settings.OPENEO_WORKSPACE_ROOT,
         user_id=str(a_mock_user.user_id)
@@ -92,12 +103,14 @@ def test_file_list(user_validate, a_mock_user, mock_settings):
     assert str(user_workspace.files_directory) not in resp.json()["files"][0]["path"]
 
 
-@patch("openeo_fastapi.client.auth.Authenticator.validate")
-def test_file_upload(user_validate, a_mock_user, mock_settings):
-    
-    fs = fsspec.filesystem(protocol="file")
+def test_file_upload(a_mock_user, mock_settings):
 
-    user_validate.return_value = a_mock_user
+    async def _mock_validate(request: Request):
+        return a_mock_user
+
+    app_api.dependency_overrides[ExtendedAuthenticator.validate] = _mock_validate
+
+    fs = fsspec.filesystem(protocol="file")
 
     create(create_object=a_mock_user)
 
@@ -130,11 +143,12 @@ def test_file_upload(user_validate, a_mock_user, mock_settings):
     assert fs.exists(expected_file)
 
 
+def test_file_delete(a_mock_user, mock_settings):
 
-@patch("openeo_fastapi.client.auth.Authenticator.validate")
-def test_file_delete(user_validate, a_mock_user, mock_settings):
-    
-    user_validate.return_value = a_mock_user
+    async def _mock_validate(request: Request):
+        return a_mock_user
+
+    app_api.dependency_overrides[ExtendedAuthenticator.validate] = _mock_validate
 
     fs = fsspec.filesystem(protocol="file")
 
@@ -142,7 +156,6 @@ def test_file_delete(user_validate, a_mock_user, mock_settings):
 
     app = TestClient(app_api)
 
-    # Ensure 'users workspace' exists
     user_workspace = UserWorkspace(
         root_dir=mock_settings.OPENEO_WORKSPACE_ROOT,
         user_id=str(a_mock_user.user_id)
