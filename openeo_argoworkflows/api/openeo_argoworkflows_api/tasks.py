@@ -1,4 +1,5 @@
 import json
+import logging
 
 from datetime import timedelta
 from hera.workflows import  WorkflowsService
@@ -12,6 +13,8 @@ from openeo_fastapi.client.psql.engine import modify
 from openeo_argoworkflows_api.psql.models import ArgoJob, ExtendedUser
 from openeo_argoworkflows_api.workflows import executor_workflow
 from openeo_argoworkflows_api.settings import ExtendedAppSettings
+
+logger = logging.getLogger(__name__)
 
 settings = ExtendedAppSettings()
 
@@ -98,6 +101,7 @@ def submit_job(job: ArgoJob):
         if settings.DASK_PROFILES and settings.DASK_ROLE_PROFILE_MAPPING:
             user = engine.get(get_model=ExtendedUser, primary_key=job.user_id)
             user_roles = (user.roles or []) if user else []
+            logger.debug("Selecting dask profile for job %s: user=%s roles=%s", job.job_id, job.user_id, user_roles)
             dask_profile = _select_dask_profile(
                 user_roles,
                 json.loads(settings.DASK_ROLE_PROFILE_MAPPING),

@@ -103,20 +103,30 @@ class ExtendedAuthenticator(Authenticator):
         roles = []
         if settings.OIDC_ROLES_CLAIM:
             roles = _extract_roles_from_userinfo(user_info, settings.OIDC_ROLES_CLAIM)
+            logger.debug(
+                "Extracted roles %s for sub=%s (claim=%s, raw=%s)",
+                roles,
+                user_info.get("sub"),
+                settings.OIDC_ROLES_CLAIM,
+                user_info.get(settings.OIDC_ROLES_CLAIM.split(".")[0]),
+            )
 
         found_user = get_first_or_default(
             ExtendedUser, Filter(column_name="oidc_sub", value=user_info["sub"])
         )
 
         if found_user:
-            found_user.roles = roles
-            modify(found_user)
+            if settings.OIDC_ROLES_CLAIM:
+                found_user.roles = roles
+                modify(found_user)
+                logger.debug("Updated roles for existing user %s: %s", found_user.user_id, roles)
             return found_user
 
         user = ExtendedUser(
             user_id=uuid.uuid4(), oidc_sub=user_info["sub"], roles=roles
         )
         create(create_object=user)
+        logger.debug("Created new user %s with roles: %s", user.user_id, roles)
         return user
 
     @classmethod
