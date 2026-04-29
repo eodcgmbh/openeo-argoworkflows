@@ -170,8 +170,9 @@ class ArgoJobsRegister(JobsRegister):
             / job.job_id.__str__()
         )
         try:
-            fs.mkdir(job_workspace)
+            job_workspace.mkdir(parents=True, exist_ok=True)
         except Exception as e:
+            logger.exception("Failed to create workspace %s", job_workspace)
             raise HTTPException(
                 status_code=500,
                 detail=f"Could not create workspace for the current job.",
