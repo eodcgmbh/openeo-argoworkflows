@@ -32,3 +32,5 @@ class ExtendedAppSettings(AppSettings):
     REDIS_PORT: int = 6379
 
     OIDC_ROLES_CLAIM: Optional[str] = None
+
+    LOG_LEVEL: str = "INFO"
