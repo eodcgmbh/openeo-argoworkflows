@@ -7,6 +7,7 @@ from openeo_fastapi.api.app import OpenEOApi
 from openeo_fastapi.api.types import Billing, Plan, FileFormat, GisDataType
 from openeo_fastapi.client.core import OpenEOCore
 
+from openeo_argoworkflows_api.auth import ExtendedAuthenticator
 from openeo_argoworkflows_api.jobs import ArgoJobsRegister
 from openeo_argoworkflows_api.files import ArgoFileRegister
 from openeo_argoworkflows_api.settings import ExtendedAppSettings
@@ -57,6 +58,7 @@ app.router.add_api_route(
 )
 
 api = OpenEOApi(client=client, app=app)
+api.override_authentication(ExtendedAuthenticator.validate)
 
 api.app.add_middleware(
     CORSMiddleware,
