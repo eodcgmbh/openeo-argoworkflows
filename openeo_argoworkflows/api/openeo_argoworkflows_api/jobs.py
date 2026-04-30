@@ -147,7 +147,7 @@ class ArgoJobsRegister(JobsRegister):
         )
 
     def start_job(
-        self, job_id: uuid.UUID, user: User = Depends(Authenticator.validate)
+        self, job_id: uuid.UUID, user: User = Depends(ExtendedAuthenticator.validate)
     ):
 
         job = engine.get(get_model=ArgoJob, primary_key=job_id)
