@@ -1,12 +1,26 @@
 import json
 
 from hera.workflows import Steps, Workflow, WorkflowsService, Step, Env
-from hera.workflows.models import Template, Container, Metadata, PersistentVolumeClaimVolumeSource, Volume, VolumeMount, SecurityContext, PodSecurityContext
+from hera.workflows.models import (
+    Template,
+    Container,
+    Metadata,
+    PersistentVolumeClaimVolumeSource,
+    Volume,
+    VolumeMount,
+    SecurityContext,
+    PodSecurityContext,
+)
 
 from openeo_argoworkflows_api.settings import ExtendedAppSettings
 
 
-def executor_workflow(service: WorkflowsService, process_graph: dict, dask_profile: dict, user_profile: dict):
+def executor_workflow(
+    service: WorkflowsService,
+    process_graph: dict,
+    dask_profile: dict,
+    user_profile: dict,
+):
     user_profile_as_json = json.dumps(user_profile)
     dask_profile_as_json = json.dumps(dask_profile)
     process_graph_as_json = json.dumps(process_graph)
@@ -20,19 +34,19 @@ def executor_workflow(service: WorkflowsService, process_graph: dict, dask_profi
         pod_metadata=Metadata(
             labels={
                 "OPENEO_JOB_ID": user_profile["OPENEO_JOB_ID"],
-                "OPENEO_USER_ID": user_profile["OPENEO_USER_ID"]
+                "OPENEO_USER_ID": user_profile["OPENEO_USER_ID"],
             }
         ),
         volumes=Volume(
             name="workspaces-volume",
             persistent_volume_claim=PersistentVolumeClaimVolumeSource(
                 claim_name=settings.OPENEO_WORKSPACE_CLAIMNAME
-            )
+            ),
         ),
-        security_context = PodSecurityContext(
+        security_context=PodSecurityContext(
             fsGroup=settings.OPENEO_WORKSPACE_SECURITY_GROUP
         ),
-        deletion_grace_period_seconds=1800
+        deletion_grace_period_seconds=1800,
     ) as w:
         with Steps(name="process"):
             Step(
@@ -47,22 +61,25 @@ def executor_workflow(service: WorkflowsService, process_graph: dict, dask_profi
                         command=["openeo_executor"],
                         args=[
                             "execute",
-                            "--process_graph", process_graph_as_json,
-                            "--user_profile", user_profile_as_json,
-                            "--dask_profile", dask_profile_as_json
+                            "--process_graph",
+                            process_graph_as_json,
+                            "--user_profile",
+                            user_profile_as_json,
+                            "--dask_profile",
+                            dask_profile_as_json,
                         ],
                         volume_mounts=[
                             VolumeMount(
                                 name="workspaces-volume",
-                                mount_path=settings.OPENEO_MOUNT_PATH
+                                mount_path=settings.OPENEO_MOUNT_PATH,
                             )
                         ],
-                        security_context = SecurityContext(
+                        security_context=SecurityContext(
                             runAsUser=1000,
-                            runAsGroup=settings.OPENEO_WORKSPACE_SECURITY_GROUP
+                            runAsGroup=settings.OPENEO_WORKSPACE_SECURITY_GROUP,
                         ),
-                    )
-                )
+                    ),
+                ),
             )
 
     return w

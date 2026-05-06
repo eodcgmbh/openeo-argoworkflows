@@ -1,10 +1,15 @@
+import datetime
 import fakeredis
 import pytest
+import uuid
 
 from rq import Worker, SimpleWorker
 from unittest.mock import patch
 
-from openeo_argoworkflows_api.tasks import queue_to_submit, q, _select_dask_profile
+from openeo_fastapi.client.processes import UserDefinedProcessGraph
+from openeo_fastapi.client.psql.engine import create
+
+from openeo_argoworkflows_api.tasks import queue_to_submit, q, _select_dask_profile, _resolve_udps
 
 BASE = {
     "GATEWAY_URL": "http://gateway",
@@ -72,3 +77,39 @@ def test_select_profile_base_fields_preserved():
 @patch("openeo_argoworkflows_api.tasks.Redis")
 def test_submit_job(mock_redis, redis_conn, a_mock_job):
     assert True
+
+
+def test_resolve_udps_inlines_udp(mock_engine):
+    user_id = uuid.uuid4()
+
+    udp = UserDefinedProcessGraph(
+        id="add_one",
+        user_id=user_id,
+        process_graph={
+            "add_step": {
+                "process_id": "add",
+                "arguments": {"x": {"from_parameter": "x"}, "y": 1},
+                "result": True,
+            }
+        },
+        parameters=[{"name": "x", "schema": {"type": "number"}}],
+        created=datetime.datetime.now(),
+    )
+    create(udp)
+
+    process_graph = {
+        "call_udp": {
+            "process_id": "add_one",
+            "namespace": str(user_id),
+            "arguments": {"x": 5},
+            "result": True,
+        }
+    }
+
+    resolved = _resolve_udps(process_graph, user_id)
+
+    # resolve_process_graph flattens UDP nodes into the top-level graph,
+    # prefixed with the calling node's id.
+    assert "call_udp_add_step" in resolved
+    assert resolved["call_udp_add_step"]["process_id"] == "add"
+    assert resolved["call_udp_add_step"]["arguments"] == {"x": 5, "y": 1}
