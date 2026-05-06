@@ -114,7 +114,7 @@ class ExtendedAuthenticator(Authenticator):
         )
 
         if found_user:
-            if settings.OIDC_ROLES_CLAIM:
+            if settings.OIDC_ROLES_CLAIM and found_user.roles != roles:
                 found_user.roles = roles
                 modify(found_user)
                 logger.info("Persisted roles for user %s: %s", found_user.user_id, roles)

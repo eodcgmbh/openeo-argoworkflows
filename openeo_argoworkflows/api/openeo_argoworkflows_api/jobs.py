@@ -256,22 +256,9 @@ class ArgoJobsRegister(JobsRegister):
                 name=workflow.metadata.name, namespace=workflow.metadata.namespace
             ),
             params={
-                "podName": None,
-                "logOptions.container": "executor",
-                "logOptions.follow": None,
-                "logOptions.previous": None,
-                "logOptions.sinceSeconds": None,
-                "logOptions.sinceTime.seconds": None,
-                "logOptions.sinceTime.nanos": None,
-                "logOptions.timestamps": None,
-                "logOptions.tailLines": None,
-                "logOptions.limitBytes": None,
-                "logOptions.insecureSkipTLSVerifyBackend": None,
-                "grep": None,
-                "selector": None,
+                "logOptions.container": "main",
             },
-            headers={"Authorization": f"{self.workflows_service.token}"},
-            data=None,
+            headers={"Authorization": f"Bearer {self.workflows_service.token}"},
             verify=self.workflows_service.verify_ssl,
         )
 
@@ -283,6 +270,13 @@ class ArgoJobsRegister(JobsRegister):
                 for log in raw_logs
                 if log != "" and "content" in json.loads(log)["result"].keys()
             ]
+        else:
+            logger.warning(
+                "Failed to fetch logs for workflow %s: [%s] %s",
+                job.workflowname,
+                resp.status_code,
+                resp.text,
+            )
 
         return JobsGetLogsResponse(
             logs=logs,
