@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "openeo-argoworkflows-executor"
-version = "2026.5.1"
+version = "2026.5.2"
 description = ""
 authors = ["sean <sean.hoyal@external.eodc.eu>"]
 readme = "README.md"
@@ -9,7 +9,7 @@ packages = [{include = "openeo_argoworkflows_executor"}]
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
 dask-gateway = "^2024.1.0"
-openeo-processes-dask-slim = ">=2026.4.3"
+openeo-processes-dask-slim = {version = ">=2026.4.3", extras = ["implementations", "ml"]}
 openeo-pg-parser-networkx = ">=2024.4.0"
 pystac-client = ">=0.8.2,<1"
 xarray = ">=2024.3.0"
