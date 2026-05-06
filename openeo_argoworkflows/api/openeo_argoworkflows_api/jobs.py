@@ -257,6 +257,7 @@ class ArgoJobsRegister(JobsRegister):
             ),
             params={
                 "logOptions.container": "main",
+                "access_token": self.workflows_service.token,
             },
             headers={"Authorization": f"Bearer {self.workflows_service.token}"},
             verify=self.workflows_service.verify_ssl,
