@@ -5,7 +5,7 @@ from typing import Optional
 import sys
 
 from openeo_pg_parser_networkx import Process, ProcessRegistry, OpenEOProcessGraph
-from openeo_processes_dask.process_implementations.core import process
+from openeo_processes_dask_slim.process_implementations.core import process
 
 from openeo_argoworkflows_executor.stac import StacGrid
 from openeo_argoworkflows_executor.utils import derive_sub_graph, get_pg_bounding_box
@@ -72,7 +72,7 @@ def prepare_graphs(process_graph: OpenEOProcessGraph):
 def execute(parsed_graph: OpenEOProcessGraph):
     process_registry = ProcessRegistry(wrap_funcs=[process])
 
-    _register_processes_from_module(process_registry, "openeo_processes_dask")
+    _register_processes_from_module(process_registry, "openeo_processes_dask_slim")
     _register_processes_from_module(
         process_registry, "openeo_argoworkflows_executor.extra_processes"
     )

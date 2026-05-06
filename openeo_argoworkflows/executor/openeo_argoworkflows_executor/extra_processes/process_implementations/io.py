@@ -10,13 +10,12 @@ from odc.stac import stac_load
 from pathlib import Path
 from pystac.extensions import raster
 from typing import Optional, Union
-from openeo_processes_dask.process_implementations.data_model import (
-    RasterCube
-)
-from openeo_processes_dask.process_implementations.cubes._filter import filter_bbox
+from openeo_processes_dask_slim.process_implementations.data_model import RasterCube
+from openeo_processes_dask_slim.process_implementations.cubes._filter import filter_bbox
 from openeo_pg_parser_networkx.pg_schema import BoundingBox, GeoJson, TemporalInterval
 
 __all__ = ["load_collection", "save_result"]
+
 
 def load_collection(
     id: str,
@@ -50,7 +49,7 @@ def load_collection(
         raise ValueError("Provided spatial extent could not be interpreted.")
 
     query_dict["datetime"] = tuple(
-        [time.root.isoformat() for time in temporal_extent if time != 'None']
+        [time.root.isoformat() for time in temporal_extent if time != "None"]
     )
 
     if "STAC_API_URL" not in os.environ:
@@ -70,24 +69,24 @@ def load_collection(
 
     if raster.RasterExtension.has_extension(example_item):
         for asset in example_item.get_assets().values():
-            if 'raster:bands' in asset.extra_fields.keys():
-                for band in asset.extra_fields['raster:bands']:
-                    if 'spatial_resolution' in band:
-                        resolution = band['spatial_resolution']
-                    if 'nodata' in band:
-                        nodata = band['nodata']
-                    if 'data_type' in band:
-                        dtype = band['data_type']
+            if "raster:bands" in asset.extra_fields.keys():
+                for band in asset.extra_fields["raster:bands"]:
+                    if "spatial_resolution" in band:
+                        resolution = band["spatial_resolution"]
+                    if "nodata" in band:
+                        nodata = band["nodata"]
+                    if "data_type" in band:
+                        dtype = band["data_type"]
             if resolution and nodata and dtype:
                 break
     else:
         crs_measurement = pyproj.CRS.from_wkt(crs).axis_info[0].unit_name
 
-        if crs_measurement == 'metre':
+        if crs_measurement == "metre":
             resolution = 10
-        elif crs_measurement == 'degree':
+        elif crs_measurement == "degree":
             resolution = 0.0009
-        
+
     # TODO Need to tidy up the logic above.
     kwargs = {}
     # TODO Need to ensure nodata belongs to the dtype
@@ -98,7 +97,7 @@ def load_collection(
             nodata = int(nodata)
 
     if nodata:
-        kwargs["nodata"] = nodata       
+        kwargs["nodata"] = nodata
 
     lazy_xarray = stac_load(
         result_items,
@@ -106,20 +105,22 @@ def load_collection(
         resolution=resolution,
         # TODO Add some way to decide chunks
         chunks={"x": 2048, "y": 2048},
-        **kwargs
-    ).to_array(dim='bands')
+        **kwargs,
+    ).to_array(dim="bands")
 
     lazy_xarray.rio.write_crs(crs)
 
     # Add some sort of clipping here to the original bounding box that was requested.
     return filter_bbox(lazy_xarray, extent=spatial_extent)
 
+
 def save_result(
     data: RasterCube,
-    format: str = 'netcdf',
+    format: str = "netcdf",
     options: Optional[dict] = None,
 ):
     """ """
+
     def clean_unused_coordinates(ds):
         """
         Remove all coordinates that are not used in the DataArray dimensions.
@@ -146,7 +147,7 @@ def save_result(
     destination = Path(os.environ["OPENEO_RESULTS_PATH"]) / f"{_id}.nc"
     dim = data.openeo.band_dims[0] if data.openeo.band_dims else None
     crs = data.rio.crs
-    
+
     data.attrs = {}
     data.attrs["crs"] = str(crs)
 
@@ -159,9 +160,8 @@ def save_result(
         dtype = "float32"
 
     comp = dict(zlib=True, complevel=5, dtype=dtype)
-    
+
     encoding = {var: comp for var in out_data.data_vars}
     out_data = clean_unused_coordinates(out_data)
 
     out_data.to_netcdf(path=destination, encoding=encoding)
-
