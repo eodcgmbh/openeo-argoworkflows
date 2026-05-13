@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "openeo-argoworkflows-executor"
-version = "2026.5.6"
+version = "2026.5.7"
 description = ""
 authors = ["sean <sean.hoyal@external.eodc.eu>"]
 readme = "README.md"

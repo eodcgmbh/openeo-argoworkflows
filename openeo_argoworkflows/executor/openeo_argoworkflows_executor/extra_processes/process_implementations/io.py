@@ -75,6 +75,7 @@ def load_collection(
 
     example_item = result_items[0]
 
+    crs = None
     if "proj:wkt2" in example_item.properties.keys():
         crs = pyproj.CRS.from_wkt(example_item.properties["proj:wkt2"])
     elif "proj:epsg" in example_item.properties.keys():
@@ -92,8 +93,8 @@ def load_collection(
                         dtype = band["data_type"]
             if resolution and nodata and dtype:
                 break
-    else:
-        crs_measurement = pyproj.CRS.from_wkt(crs).axis_info[0].unit_name
+    elif crs is not None:
+        crs_measurement = crs.axis_info[0].unit_name
 
         if crs_measurement == "metre":
             resolution = 10
