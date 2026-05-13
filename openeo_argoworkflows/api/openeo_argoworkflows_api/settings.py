@@ -14,6 +14,9 @@ class ExtendedAppSettings(AppSettings):
     OPENEO_EXECUTOR_IMAGE: Optional[str]
     OPENEO_SIGN_KEY: Optional[str]
 
+    STAC_API_USERNAME: Optional[SecretStr] = None
+    STAC_API_PASSWORD: Optional[SecretStr] = None
+
     ARGO_WORKFLOWS_SERVER: Optional[AnyUrl]
     ARGO_WORKFLOWS_NAMESPACE: Optional[str]
     ARGO_WORKFLOWS_TOKEN: Optional[SecretStr]

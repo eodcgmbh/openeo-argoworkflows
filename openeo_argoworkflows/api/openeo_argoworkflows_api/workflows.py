@@ -26,6 +26,22 @@ def executor_workflow(
     process_graph_as_json = json.dumps(process_graph)
 
     settings = ExtendedAppSettings()
+
+    executor_env = [Env(name="STAC_API_URL", value=str(settings.STAC_API_URL))]
+    if settings.STAC_API_USERNAME and settings.STAC_API_PASSWORD:
+        executor_env.extend(
+            [
+                Env(
+                    name="STAC_API_USERNAME",
+                    value=settings.STAC_API_USERNAME.get_secret_value(),
+                ),
+                Env(
+                    name="STAC_API_PASSWORD",
+                    value=settings.STAC_API_PASSWORD.get_secret_value(),
+                ),
+            ]
+        )
+
     with Workflow(
         generate_name="openeo-executor-",
         entrypoint="process",
@@ -54,9 +70,7 @@ def executor_workflow(
                 template=Template(
                     name="executor",
                     container=Container(
-                        env=[
-                            Env(name="STAC_API_URL", value=str(settings.STAC_API_URL))
-                        ],
+                        env=executor_env,
                         image=settings.OPENEO_EXECUTOR_IMAGE,
                         command=["openeo_executor"],
                         args=[

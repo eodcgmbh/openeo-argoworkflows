@@ -1,3 +1,4 @@
+import base64
 import logging
 import numpy as np
 import os
@@ -15,6 +16,15 @@ from openeo_processes_dask_slim.process_implementations.cubes._filter import fil
 from openeo_pg_parser_networkx.pg_schema import BoundingBox, GeoJson, TemporalInterval
 
 __all__ = ["load_collection", "save_result"]
+
+
+def _stac_auth_headers() -> dict:
+    username = os.environ.get("STAC_API_USERNAME")
+    password = os.environ.get("STAC_API_PASSWORD")
+    if username and password:
+        credentials = base64.b64encode(f"{username}:{password}".encode()).decode()
+        return {"Authorization": f"Basic {credentials}"}
+    return {}
 
 
 def load_collection(
@@ -55,7 +65,10 @@ def load_collection(
     if "STAC_API_URL" not in os.environ:
         raise Exception("STAC URL Not available in executor config.")
 
-    catalog = pystac_client.Client.open(os.environ["STAC_API_URL"])
+    catalog = pystac_client.Client.open(
+        os.environ["STAC_API_URL"],
+        headers=_stac_auth_headers(),
+    )
     results = catalog.search(**query_dict, limit=10)
 
     result_items = list(results.items())
