@@ -164,3 +164,4 @@ cython_debug/
 .env
 .notebooks/
 .vscode/
+notebooks/test_load_collection.ipynb
