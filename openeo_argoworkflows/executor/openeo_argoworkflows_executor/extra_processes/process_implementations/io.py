@@ -4,6 +4,7 @@ import numpy as np
 import os
 import pyproj
 import pystac_client
+import re
 import rioxarray
 import xarray as xr
 
@@ -76,6 +77,10 @@ def load_collection(
     example_item = result_items[0]
 
     crs = None
+    resolution = None
+    nodata = None
+    dtype = None
+
     if "proj:wkt2" in example_item.properties.keys():
         crs = pyproj.CRS.from_wkt(example_item.properties["proj:wkt2"])
     elif "proj:epsg" in example_item.properties.keys():
@@ -100,6 +105,42 @@ def load_collection(
             resolution = 10
         elif crs_measurement == "degree":
             resolution = 0.0009
+
+    # Fallback for catalogues that publish no proj/raster extensions (e.g. HDA).
+    # Try grid:code MGRS → UTM EPSG, then parse resolution from asset href suffix.
+    if crs is None:
+        grid_code = example_item.properties.get("grid:code", "")
+        mgrs_match = re.match(r"MGRS-(\d{1,2})([C-X])", grid_code, re.IGNORECASE)
+        if mgrs_match:
+            zone = int(mgrs_match.group(1))
+            band_letter = mgrs_match.group(2).upper()
+            epsg = 32600 + zone if band_letter >= "N" else 32700 + zone
+            crs = pyproj.CRS.from_epsg(epsg)
+        else:
+            crs = pyproj.CRS.from_epsg(4326)
+
+    if resolution is None:
+        for asset in example_item.get_assets().values():
+            href = asset.href or ""
+            m = re.search(r"_(\d+)m\.", href)
+            if m:
+                resolution = int(m.group(1))
+                break
+        if resolution is None:
+            # Check alternate origin hrefs
+            for asset in example_item.get_assets().values():
+                alt_href = (
+                    asset.extra_fields.get("alternate", {})
+                    .get("origin", {})
+                    .get("href", "")
+                )
+                m = re.search(r"_(\d+)m\.", alt_href)
+                if m:
+                    resolution = int(m.group(1))
+                    break
+        if resolution is None:
+            crs_unit = crs.axis_info[0].unit_name if crs else "degree"
+            resolution = 10 if crs_unit == "metre" else 0.0001
 
     # TODO Need to tidy up the logic above.
     kwargs = {}
