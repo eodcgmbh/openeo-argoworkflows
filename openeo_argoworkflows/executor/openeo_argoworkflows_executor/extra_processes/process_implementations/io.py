@@ -1,11 +1,15 @@
 import base64
+import functools
 import logging
 import numpy as np
 import os
 import pyproj
 import pystac_client
 import re
+import requests
+import rasterio
 import rioxarray
+import tempfile
 import xarray as xr
 
 from odc.stac import stac_load
@@ -17,6 +21,96 @@ from openeo_processes_dask_slim.process_implementations.cubes._filter import fil
 from openeo_pg_parser_networkx.pg_schema import BoundingBox, GeoJson, TemporalInterval
 
 __all__ = ["load_collection", "save_result"]
+
+_log = logging.getLogger(__name__)
+
+# Sentinel so we only patch once per process.
+_rasterio_open_patched = False
+
+
+class _AuthDataset:
+    """Thin wrapper around a rasterio dataset that keeps a rasterio.Env alive
+    for the full duration of the ``with rasterio.open(...) as ds:`` block.
+
+    Without this, the Env exits immediately after open() returns, so subsequent
+    range-read requests inside the block run without the auth header.
+    """
+
+    def __init__(self, ds, env):
+        self._ds = ds
+        self._env = env
+
+    def __enter__(self):
+        return self._ds.__enter__()
+
+    def __exit__(self, *args):
+        try:
+            return self._ds.__exit__(*args)
+        finally:
+            self._env.__exit__(*args)
+
+    def __getattr__(self, name):
+        return getattr(self._ds, name)
+
+
+def _patch_rasterio_open_with_auth(hdr_path: str) -> None:
+    """Replace rasterio.open with a version that injects GDAL HTTP auth env for
+    HDA download URLs.  Called once per load_collection invocation; subsequent
+    calls update the header file in-place so the token stays fresh."""
+    global _rasterio_open_patched
+
+    _log.info("GDAL auth header file: %s", hdr_path)
+
+    if _rasterio_open_patched:
+        return  # already patched; header file was refreshed above
+
+    _orig_open = rasterio.open
+
+    @functools.wraps(_orig_open)
+    def _auth_open(fp, mode="r", *args, **kwargs):
+        if isinstance(fp, str) and "hda-download." in fp:
+            env = rasterio.Env(GDAL_HTTP_HEADER_FILE=hdr_path, GDAL_HTTP_NO_USE_HEAD="YES")
+            env.__enter__()
+            try:
+                ds = _orig_open(fp, mode, *args, **kwargs)
+            except Exception:
+                env.__exit__(None, None, None)
+                raise
+            return _AuthDataset(ds, env)
+        return _orig_open(fp, mode, *args, **kwargs)
+
+    rasterio.open = _auth_open
+    _rasterio_open_patched = True
+    _log.info("rasterio.open patched for HDA Bearer auth")
+
+
+def _setup_hda_auth() -> None:
+    log = _log
+    client_id = os.environ.get("STAC_API_USERNAME")
+    client_secret = os.environ.get("STAC_API_PASSWORD")
+    if not (client_id and client_secret):
+        log.warning("STAC_API_USERNAME/STAC_API_PASSWORD not set — HDA downloads will not be authenticated")
+        return
+    token_url = os.environ.get(
+        "STAC_IDENTITY_URL",
+        "https://identity.data.destination-earth.eu/auth/realms/DEDL/protocol/openid-connect/token",
+    )
+    try:
+        log.info("Fetching Bearer token from %s", token_url)
+        resp = requests.post(
+            token_url,
+            data={"client_id": client_id, "client_secret": client_secret, "grant_type": "client_credentials"},
+            timeout=30,
+        )
+        resp.raise_for_status()
+        token = resp.json()["access_token"]
+        log.info("Bearer token obtained (length %d)", len(token))
+        hdr = tempfile.NamedTemporaryFile(mode="w", suffix=".hdr", prefix="gdal_auth_", delete=False)
+        hdr.write(f"Authorization: Bearer {token}\n")
+        hdr.close()
+        _patch_rasterio_open_with_auth(hdr.name)
+    except Exception as e:
+        log.warning("Bearer token fetch failed (%s) — HDA downloads may fail", e)
 
 
 def _stac_auth_headers() -> dict:
@@ -154,12 +248,22 @@ def load_collection(
     if nodata:
         kwargs["nodata"] = nodata
 
+    # Patch rasterio.open so every Dask worker thread gets an explicit
+    # rasterio.Env with the Bearer token when opening HDA download URLs.
+    # Global GDAL config (set_gdal_config) is not reliably applied inside
+    # per-thread rasterio.Env contexts created by odc.stac's task runner.
+    _setup_hda_auth()
+
     lazy_xarray = stac_load(
         result_items,
         crs=crs,
         resolution=resolution,
+        bands=bands,
         # TODO Add some way to decide chunks
         chunks={"x": 2048, "y": 2048},
+        # Some STAC items have stale/wrong collection IDs causing genuine 404s;
+        # skip those rather than aborting the entire job.
+        fail_on_error=False,
         **kwargs,
     ).to_array(dim="bands")
 
