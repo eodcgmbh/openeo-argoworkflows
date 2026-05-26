@@ -8,6 +8,7 @@ from openeo_fastapi.api.types import Billing, Plan, FileFormat, GisDataType
 from openeo_fastapi.client.core import OpenEOCore
 
 from openeo_argoworkflows_api.auth import ExtendedAuthenticator
+from openeo_argoworkflows_api.collections import ArgoCollectionRegister
 from openeo_argoworkflows_api.jobs import ArgoJobsRegister
 from openeo_argoworkflows_api.files import ArgoFileRegister
 from openeo_argoworkflows_api.settings import ExtendedAppSettings
@@ -34,6 +35,7 @@ settings = ExtendedAppSettings()
 
 client = OpenEOCore(
     settings=settings,
+    collections=ArgoCollectionRegister(settings=settings),
     files=ArgoFileRegister(settings=settings, links=links),
     jobs=ArgoJobsRegister(settings=settings, links=links),
     input_formats=input_formats,
