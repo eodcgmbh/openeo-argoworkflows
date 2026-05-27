@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
@@ -8,26 +7,24 @@ from openeo_fastapi.api.types import Billing, Plan, FileFormat, GisDataType
 from openeo_fastapi.client.core import OpenEOCore
 
 from openeo_argoworkflows_api.auth import ExtendedAuthenticator
-from openeo_argoworkflows_api.collections import ArgoCollectionRegister
 from openeo_argoworkflows_api.jobs import ArgoJobsRegister
 from openeo_argoworkflows_api.files import ArgoFileRegister
 from openeo_argoworkflows_api.settings import ExtendedAppSettings
 
-
 gtif = FileFormat(
-   title="GTiff",
+    title="GTiff",
     gis_data_types=[GisDataType("raster")],
     parameters={},
 )
 
 netcdf = FileFormat(
-   title="netCDF",
+    title="netCDF",
     gis_data_types=[GisDataType("raster")],
     parameters={},
 )
 
-input_formats = [ gtif, netcdf ]
-output_formats = [ netcdf ]
+input_formats = [gtif, netcdf]
+output_formats = [netcdf]
 
 links = []
 
@@ -35,7 +32,6 @@ settings = ExtendedAppSettings()
 
 client = OpenEOCore(
     settings=settings,
-    collections=ArgoCollectionRegister(settings=settings),
     files=ArgoFileRegister(settings=settings, links=links),
     jobs=ArgoJobsRegister(settings=settings, links=links),
     input_formats=input_formats,
@@ -45,7 +41,7 @@ client = OpenEOCore(
         currency="credits",
         default_plan="a-cloud",
         plans=[Plan(name="user", description="Subscription plan.", paid=True)],
-    )
+    ),
 )
 app = FastAPI()
 
@@ -89,8 +85,10 @@ api.app.add_middleware(
     ],
 )
 
+
 def redirect_wellknown():
     return RedirectResponse("/.well-known/openeo")
+
 
 api.app.router.add_api_route(
     name="redirect_wellknown",
