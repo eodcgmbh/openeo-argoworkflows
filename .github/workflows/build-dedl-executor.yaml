@@ -1,0 +1,69 @@
+name: Build and publish DEDL executor image
+
+on:
+  push:
+    branches:
+      - main
+      - dedl-executor
+    paths:
+      - 'Dockerfile.executor-dedl'
+      - 'openeo_argoworkflows/executor/openeo_argoworkflows_executor/executor.py'
+      - '.github/workflows/build-dedl-executor.yaml'
+  workflow_dispatch:
+    inputs:
+      base_executor_image:
+        description: Base executor image to extend
+        required: true
+        default: ghcr.io/eodcgmbh/openeo-argoworkflows:executor-2026.5.8
+      dedl_package_ref:
+        description: Git ref for openeo-processes-dedl-cube-load
+        required: true
+        default: main
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/openeo-argoworkflows-executor-dedl
+  BASE_EXECUTOR_IMAGE: ${{ inputs.base_executor_image || 'ghcr.io/eodcgmbh/openeo-argoworkflows:executor-2026.5.8' }}
+  DEDL_PACKAGE_REF: ${{ inputs.dedl_package_ref || 'main' }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=2026.6.1,enable={{is_default_branch}}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.executor-dedl
+          push: true
+          build-args: |
+            BASE_EXECUTOR_IMAGE=${{ env.BASE_EXECUTOR_IMAGE }}
+            DEDL_PACKAGE_REF=${{ env.DEDL_PACKAGE_REF }}
+          secrets: |
+            eumetsat_gitlab_token=${{ secrets.EUMETSAT_GITLAB_TOKEN }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

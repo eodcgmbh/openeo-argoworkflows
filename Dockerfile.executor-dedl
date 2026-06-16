@@ -1,0 +1,34 @@
+# syntax=docker/dockerfile:1.7
+
+ARG BASE_EXECUTOR_IMAGE=ghcr.io/eodcgmbh/openeo-argoworkflows:executor-2026.5.8
+
+FROM ${BASE_EXECUTOR_IMAGE}
+
+USER root
+
+ARG DEDL_PACKAGE_REF=main
+ARG USER_ID=1000
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN --mount=type=secret,id=eumetsat_gitlab_token \
+    EUMETSAT_GITLAB_TOKEN="$(cat /run/secrets/eumetsat_gitlab_token)" \
+    && \
+    GIT_CONFIG_COUNT=3 \
+    GIT_CONFIG_KEY_0="url.https://oauth2:${EUMETSAT_GITLAB_TOKEN}@gitlab.eumetsat.int/.insteadOf" \
+    GIT_CONFIG_VALUE_0="https://gitlab.eumetsat.int/" \
+    GIT_CONFIG_KEY_1="url.https://github.com/.insteadOf" \
+    GIT_CONFIG_VALUE_1="git@github.com:" \
+    GIT_CONFIG_KEY_2="url.https://github.com/.insteadOf" \
+    GIT_CONFIG_VALUE_2="ssh://git@github.com/" \
+        /opt/openeo_argoworkflows_executor/.venv/bin/python -m pip install --no-cache-dir \
+            "openeo-processes-dedl-cube-load @ git+https://gitlab.eumetsat.int/dedl-cube/openeo-processes-dedl-cube-load.git@${DEDL_PACKAGE_REF}"
+
+COPY ./openeo_argoworkflows/executor/openeo_argoworkflows_executor/executor.py \
+    /opt/openeo_argoworkflows_executor/executor.py
+
+RUN chown ${USER_ID}:0 /opt/openeo_argoworkflows_executor/executor.py
+
+USER ${USER_ID}

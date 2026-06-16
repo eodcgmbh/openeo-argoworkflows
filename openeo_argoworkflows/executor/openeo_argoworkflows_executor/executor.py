@@ -74,6 +74,9 @@ def execute(parsed_graph: OpenEOProcessGraph):
 
     _register_processes_from_module(process_registry, "openeo_processes_dask_slim")
     _register_processes_from_module(
+        process_registry, "openeo_processes_dedl_cube_load"
+    )
+    _register_processes_from_module(
         process_registry, "openeo_argoworkflows_executor.extra_processes"
     )
 
