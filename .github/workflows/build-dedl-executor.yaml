@@ -14,7 +14,7 @@ on:
       base_executor_image:
         description: Base executor image to extend
         required: true
-        default: ghcr.io/eodcgmbh/openeo-argoworkflows:executor-2026.6.1
+        default: ghcr.io/eodcgmbh/openeo-argoworkflows:executor-2026.6.2
       dedl_package_ref:
         description: Git ref for openeo-processes-dedl-cube-load
         required: true
