@@ -18,10 +18,14 @@ RUN apt-get update \
 # upgrade the tested geo stack (geopandas 0.14.4 / dask-geopandas 0.4.3).
 # Without this, pip's resolver upgrades geopandas past 1.0, which removed
 # `geom_almost_equals` and breaks dask-geopandas at import time.
-# Keep only `pkg==version` pins; drop any VCS/editable/path entries (e.g. the
-# root project) that pip refuses to read from a constraints file.
+# Constrain ONLY the geo stack to the base image's tested versions so the DEDL
+# install below can't upgrade geopandas past 1.0 (which removed
+# `geom_almost_equals` and breaks dask-geopandas at import time). Freezing the
+# whole environment is too strict — it pins packages the DEDL dependency tree
+# legitimately needs to re-resolve (e.g. openeo-processes-dask-slim).
 RUN /opt/openeo_argoworkflows_executor/.venv/bin/python -m pip freeze \
-        | grep '==' > /tmp/base-constraints.txt
+        | grep -iE '^(geopandas|dask-geopandas|shapely)==' \
+        > /tmp/base-constraints.txt
 
 RUN --mount=type=secret,id=eumetsat_gitlab_token \
     EUMETSAT_GITLAB_TOKEN="$(cat /run/secrets/eumetsat_gitlab_token)" \

@@ -12,9 +12,9 @@ on:
   workflow_dispatch:
     inputs:
       base_executor_image:
-        description: Base executor image to extend
-        required: true
-        default: ghcr.io/eodcgmbh/openeo-argoworkflows:executor-2026.6.2
+        description: Full base executor image to extend (optional; overrides the image derived from BASE_VERSION)
+        required: false
+        default: ''
       dedl_package_ref:
         description: Git ref for openeo-processes-dedl-cube-load
         required: true
@@ -23,7 +23,9 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository_owner }}/openeo-argoworkflows-executor-dedl
-  BASE_EXECUTOR_IMAGE: ${{ inputs.base_executor_image || 'ghcr.io/eodcgmbh/openeo-argoworkflows:executor-2026.5.8' }}
+  # Single source of truth for the base executor version. Bump this one value to
+  # build against (and tag the DEDL image with) a new base executor release.
+  BASE_VERSION: '2026.6.2'
   DEDL_PACKAGE_REF: ${{ inputs.dedl_package_ref || 'main' }}
 
 jobs:
@@ -52,7 +54,7 @@ jobs:
           tags: |
             type=sha,prefix=
             type=raw,value=latest,enable={{is_default_branch}}
-            type=raw,value=2026.6.1,enable={{is_default_branch}}
+            type=raw,value=${{ env.BASE_VERSION }},enable={{is_default_branch}}
 
       - name: Build and push
         uses: docker/build-push-action@v5
@@ -61,7 +63,7 @@ jobs:
           file: Dockerfile.executor-dedl
           push: true
           build-args: |
-            BASE_EXECUTOR_IMAGE=${{ env.BASE_EXECUTOR_IMAGE }}
+            BASE_EXECUTOR_IMAGE=${{ inputs.base_executor_image || format('ghcr.io/eodcgmbh/openeo-argoworkflows:executor-{0}', env.BASE_VERSION) }}
             DEDL_PACKAGE_REF=${{ env.DEDL_PACKAGE_REF }}
           secrets: |
             eumetsat_gitlab_token=${{ secrets.EUMETSAT_GITLAB_TOKEN }}
