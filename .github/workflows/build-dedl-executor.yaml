@@ -23,7 +23,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository_owner }}/openeo-argoworkflows-executor-dedl
-  BASE_EXECUTOR_IMAGE: ${{ inputs.base_executor_image || 'ghcr.io/eodcgmbh/openeo-argoworkflows:executor-2026.5.8' }}
+  BASE_EXECUTOR_IMAGE: ${{ inputs.base_executor_image || 'ghcr.io/eodcgmbh/openeo-argoworkflows:executor-2026.6.2' }}
   DEDL_PACKAGE_REF: ${{ inputs.dedl_package_ref || 'main' }}
 
 jobs:
