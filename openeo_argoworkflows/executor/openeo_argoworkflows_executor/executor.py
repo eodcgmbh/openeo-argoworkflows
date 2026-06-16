@@ -3,6 +3,7 @@ import inspect
 import logging
 from typing import Optional
 import sys
+import importlib
 
 from openeo_pg_parser_networkx import Process, ProcessRegistry, OpenEOProcessGraph
 from openeo_processes_dask_slim.process_implementations.core import process
@@ -73,9 +74,15 @@ def execute(parsed_graph: OpenEOProcessGraph):
     process_registry = ProcessRegistry(wrap_funcs=[process])
 
     _register_processes_from_module(process_registry, "openeo_processes_dask_slim")
-    _register_processes_from_module(
-        process_registry, "openeo_processes_dedl_cube_load"
-    )
+
+    try:
+        importlib.import_module("openeo_processes_dedl_cube_load")
+        _register_processes_from_module(
+            process_registry, "openeo_processes_dedl_cube_load"
+        )
+    except ImportError:
+        pass
+    
     _register_processes_from_module(
         process_registry, "openeo_argoworkflows_executor.extra_processes"
     )
