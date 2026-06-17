@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-ARG BASE_EXECUTOR_IMAGE=ghcr.io/eodcgmbh/openeo-argoworkflows:executor-2026.6.2
+ARG BASE_EXECUTOR_IMAGE=ghcr.io/eodcgmbh/openeo-argoworkflows:executor-2026.6.3
 
 FROM ${BASE_EXECUTOR_IMAGE}
 
@@ -13,20 +13,6 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends git \
     && rm -rf /var/lib/apt/lists/*
 
-# Freeze the base image's already-installed (lock-resolved) environment into a
-# constraints file so the DEDL install below can add new packages but never
-# upgrade the tested geo stack (geopandas 0.14.4 / dask-geopandas 0.4.3).
-# Without this, pip's resolver upgrades geopandas past 1.0, which removed
-# `geom_almost_equals` and breaks dask-geopandas at import time.
-# Constrain ONLY the geo stack to the base image's tested versions so the DEDL
-# install below can't upgrade geopandas past 1.0 (which removed
-# `geom_almost_equals` and breaks dask-geopandas at import time). Freezing the
-# whole environment is too strict — it pins packages the DEDL dependency tree
-# legitimately needs to re-resolve (e.g. openeo-processes-dask-slim).
-RUN /opt/openeo_argoworkflows_executor/.venv/bin/python -m pip freeze \
-        | grep -iE '^(geopandas|dask-geopandas|shapely)==' \
-        > /tmp/base-constraints.txt
-
 RUN --mount=type=secret,id=eumetsat_gitlab_token \
     EUMETSAT_GITLAB_TOKEN="$(cat /run/secrets/eumetsat_gitlab_token)" \
     && \
@@ -38,7 +24,6 @@ RUN --mount=type=secret,id=eumetsat_gitlab_token \
     GIT_CONFIG_KEY_2="url.https://github.com/.insteadOf" \
     GIT_CONFIG_VALUE_2="ssh://git@github.com/" \
         /opt/openeo_argoworkflows_executor/.venv/bin/python -m pip install --no-cache-dir \
-            -c /tmp/base-constraints.txt \
             "openeo-processes-dedl-cube-load @ git+https://gitlab.eumetsat.int/dedl-cube/openeo-processes-dedl-cube-load.git@${DEDL_PACKAGE_REF}"
 
 COPY ./openeo_argoworkflows/executor/openeo_argoworkflows_executor/executor.py \
