@@ -915,14 +915,14 @@ kerberos = ["pykerberos", "winkerberos"]
 
 [[package]]
 name = "dask-geopandas"
-version = "0.4.3"
+version = "0.5.0"
 description = "Parallel GeoPandas with Dask"
 category = "main"
 optional = false
 python-versions = ">=3.10"
 files = [
-    {file = "dask_geopandas-0.4.3-py3-none-any.whl", hash = "sha256:1cc159aecee7b3adc79383f1acc7c7e7c68130c57aea0643e190ac0149ef5bc4"},
-    {file = "dask_geopandas-0.4.3.tar.gz", hash = "sha256:95d1a08fcb0dc47454628b89dee2e89dd63df6c31183746a58b4908a2dc21e96"},
+    {file = "dask_geopandas-0.5.0-py3-none-any.whl", hash = "sha256:0b6c2a8f7fae94667c4af539e591fa7fb59c5c3206188fa51e461d395ef80240"},
+    {file = "dask_geopandas-0.5.0.tar.gz", hash = "sha256:b1fc2a041550d609b87db9fcfad2e8217f7336e3436415da11ba9dc8437272b1"},
 ]
 
 [package.dependencies]
@@ -1141,6 +1141,25 @@ files = [
 
 [package.extras]
 test = ["black", "pytest"]
+
+[[package]]
+name = "donfig"
+version = "0.8.1.post1"
+description = "Python package for configuring a python package"
+category = "main"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "donfig-0.8.1.post1-py3-none-any.whl", hash = "sha256:2a3175ce74a06109ff9307d90a230f81215cbac9a751f4d1c6194644b8204f9d"},
+    {file = "donfig-0.8.1.post1.tar.gz", hash = "sha256:3bef3413a4c1c601b585e8d297256d0c1470ea012afa6e8461dc28bfb7c23f52"},
+]
+
+[package.dependencies]
+pyyaml = "*"
+
+[package.extras]
+docs = ["cloudpickle", "numpydoc", "pytest", "sphinx (>=4.0.0)"]
+test = ["cloudpickle", "pytest"]
 
 [[package]]
 name = "exceptiongroup"
@@ -1477,6 +1496,49 @@ python-versions = "*"
 files = [
     {file = "geoparquet-0.0.3-py3-none-any.whl", hash = "sha256:6aaee13d802d02d73c14a981bc73482c0074a5af671557971187890070fc7da9"},
     {file = "geoparquet-0.0.3.tar.gz", hash = "sha256:2968c0cd65fe5781abc057252e71bb364b5d18ecbf26c32d753a98df01196a65"},
+]
+
+[[package]]
+name = "google-crc32c"
+version = "1.8.0"
+description = "A python wrapper of the C library 'Google CRC32C'"
+category = "main"
+optional = false
+python-versions = ">=3.9"
+files = [
+    {file = "google_crc32c-1.8.0-cp310-cp310-macosx_12_0_arm64.whl", hash = "sha256:0470b8c3d73b5f4e3300165498e4cf25221c7eb37f1159e221d1825b6df8a7ff"},
+    {file = "google_crc32c-1.8.0-cp310-cp310-macosx_12_0_x86_64.whl", hash = "sha256:119fcd90c57c89f30040b47c211acee231b25a45d225e3225294386f5d258288"},
+    {file = "google_crc32c-1.8.0-cp310-cp310-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:6f35aaffc8ccd81ba3162443fabb920e65b1f20ab1952a31b13173a67811467d"},
+    {file = "google_crc32c-1.8.0-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:864abafe7d6e2c4c66395c1eb0fe12dc891879769b52a3d56499612ca93b6092"},
+    {file = "google_crc32c-1.8.0-cp310-cp310-win_amd64.whl", hash = "sha256:db3fe8eaf0612fc8b20fa21a5f25bd785bc3cd5be69f8f3412b0ac2ffd49e733"},
+    {file = "google_crc32c-1.8.0-cp311-cp311-macosx_12_0_arm64.whl", hash = "sha256:014a7e68d623e9a4222d663931febc3033c5c7c9730785727de2a81f87d5bab8"},
+    {file = "google_crc32c-1.8.0-cp311-cp311-macosx_12_0_x86_64.whl", hash = "sha256:86cfc00fe45a0ac7359e5214a1704e51a99e757d0272554874f419f79838c5f7"},
+    {file = "google_crc32c-1.8.0-cp311-cp311-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:19b40d637a54cb71e0829179f6cb41835f0fbd9e8eb60552152a8b52c36cbe15"},
+    {file = "google_crc32c-1.8.0-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:17446feb05abddc187e5441a45971b8394ea4c1b6efd88ab0af393fd9e0a156a"},
+    {file = "google_crc32c-1.8.0-cp311-cp311-win_amd64.whl", hash = "sha256:71734788a88f551fbd6a97be9668a0020698e07b2bf5b3aa26a36c10cdfb27b2"},
+    {file = "google_crc32c-1.8.0-cp312-cp312-macosx_12_0_arm64.whl", hash = "sha256:4b8286b659c1335172e39563ab0a768b8015e88e08329fa5321f774275fc3113"},
+    {file = "google_crc32c-1.8.0-cp312-cp312-macosx_12_0_x86_64.whl", hash = "sha256:2a3dc3318507de089c5384cc74d54318401410f82aa65b2d9cdde9d297aca7cb"},
+    {file = "google_crc32c-1.8.0-cp312-cp312-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:14f87e04d613dfa218d6135e81b78272c3b904e2a7053b841481b38a7d901411"},
+    {file = "google_crc32c-1.8.0-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:cb5c869c2923d56cb0c8e6bcdd73c009c36ae39b652dbe46a05eb4ef0ad01454"},
+    {file = "google_crc32c-1.8.0-cp312-cp312-win_amd64.whl", hash = "sha256:3cc0c8912038065eafa603b238abf252e204accab2a704c63b9e14837a854962"},
+    {file = "google_crc32c-1.8.0-cp313-cp313-macosx_12_0_arm64.whl", hash = "sha256:3ebb04528e83b2634857f43f9bb8ef5b2bbe7f10f140daeb01b58f972d04736b"},
+    {file = "google_crc32c-1.8.0-cp313-cp313-macosx_12_0_x86_64.whl", hash = "sha256:450dc98429d3e33ed2926fc99ee81001928d63460f8538f21a5d6060912a8e27"},
+    {file = "google_crc32c-1.8.0-cp313-cp313-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:3b9776774b24ba76831609ffbabce8cdf6fa2bd5e9df37b594221c7e333a81fa"},
+    {file = "google_crc32c-1.8.0-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:89c17d53d75562edfff86679244830599ee0a48efc216200691de8b02ab6b2b8"},
+    {file = "google_crc32c-1.8.0-cp313-cp313-win_amd64.whl", hash = "sha256:57a50a9035b75643996fbf224d6661e386c7162d1dfdab9bc4ca790947d1007f"},
+    {file = "google_crc32c-1.8.0-cp314-cp314-macosx_12_0_arm64.whl", hash = "sha256:e6584b12cb06796d285d09e33f63309a09368b9d806a551d8036a4207ea43697"},
+    {file = "google_crc32c-1.8.0-cp314-cp314-macosx_12_0_x86_64.whl", hash = "sha256:f4b51844ef67d6cf2e9425983274da75f18b1597bb2c998e1c0a0e8d46f8f651"},
+    {file = "google_crc32c-1.8.0-cp314-cp314-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:b0d1a7afc6e8e4635564ba8aa5c0548e3173e41b6384d7711a9123165f582de2"},
+    {file = "google_crc32c-1.8.0-cp314-cp314-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:8b3f68782f3cbd1bce027e48768293072813469af6a61a86f6bb4977a4380f21"},
+    {file = "google_crc32c-1.8.0-cp314-cp314-win_amd64.whl", hash = "sha256:d511b3153e7011a27ab6ee6bb3a5404a55b994dc1a7322c0b87b29606d9790e2"},
+    {file = "google_crc32c-1.8.0-cp39-cp39-macosx_12_0_arm64.whl", hash = "sha256:ba6aba18daf4d36ad4412feede6221414692f44d17e5428bdd81ad3fc1eee5dc"},
+    {file = "google_crc32c-1.8.0-cp39-cp39-macosx_12_0_x86_64.whl", hash = "sha256:87b0072c4ecc9505cfa16ee734b00cd7721d20a0f595be4d40d3d21b41f65ae2"},
+    {file = "google_crc32c-1.8.0-cp39-cp39-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:3d488e98b18809f5e322978d4506373599c0c13e6c5ad13e53bb44758e18d215"},
+    {file = "google_crc32c-1.8.0-cp39-cp39-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:01f126a5cfddc378290de52095e2c7052be2ba7656a9f0caf4bcd1bfb1833f8a"},
+    {file = "google_crc32c-1.8.0-cp39-cp39-win_amd64.whl", hash = "sha256:61f58b28e0b21fcb249a8247ad0db2e64114e201e2e9b4200af020f3b6242c9f"},
+    {file = "google_crc32c-1.8.0-pp311-pypy311_pp73-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:87fa445064e7db928226b2e6f0d5304ab4cd0339e664a4e9a25029f384d9bb93"},
+    {file = "google_crc32c-1.8.0-pp311-pypy311_pp73-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:f639065ea2042d5c034bf258a9f085eaa7af0cd250667c0635a3118e8f92c69c"},
+    {file = "google_crc32c-1.8.0.tar.gz", hash = "sha256:a428e25fb7691024de47fecfbff7ff957214da51eddded0da0ae0e0f03a2cf79"},
 ]
 
 [[package]]
@@ -2445,6 +2507,51 @@ test-extras = ["importlib-metadata"]
 zfpy = ["numpy (<2.0.0)", "zfpy (>=1.0.0)"]
 
 [[package]]
+name = "numcodecs"
+version = "0.16.5"
+description = "A Python package providing buffer compression and transformation codecs for use in data storage and communication applications."
+category = "main"
+optional = false
+python-versions = ">=3.11"
+files = [
+    {file = "numcodecs-0.16.5-cp311-cp311-macosx_10_13_x86_64.whl", hash = "sha256:78382dcea50622f2ef1e6e7a71dbe7f861d8fe376b27b7c297c26907304fef1e"},
+    {file = "numcodecs-0.16.5-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:e2d04a19cb57a3c519b4127ac377cca6471aee1990d7c18f5b1e3a4fe1306689"},
+    {file = "numcodecs-0.16.5-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:c043af648eb280cd61785c99c22ff5c3c3460f906eb51a8511327c4f5111b283"},
+    {file = "numcodecs-0.16.5-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:c398919ef2eb0e56b8e97456f622640bfd3deed06de3acc976989cbcb22628a3"},
+    {file = "numcodecs-0.16.5-cp311-cp311-win_amd64.whl", hash = "sha256:3820860ed302d4d84a1c66e70981ff959d5eb712555be4e7d8ced49888594773"},
+    {file = "numcodecs-0.16.5-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:24e675dc8d1550cd976a99479b87d872cb142632c75cc402fea04c08c4898523"},
+    {file = "numcodecs-0.16.5-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:94ddfa4341d1a3ab99989d13b01b5134abb687d3dab2ead54b450aefe4ad5bd6"},
+    {file = "numcodecs-0.16.5-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:b554ab9ecf69de7ca2b6b5e8bc696bd9747559cb4dd5127bd08d7a28bec59c3a"},
+    {file = "numcodecs-0.16.5-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:ad1a379a45bd3491deab8ae6548313946744f868c21d5340116977ea3be5b1d6"},
+    {file = "numcodecs-0.16.5-cp312-cp312-win_amd64.whl", hash = "sha256:845a9857886ffe4a3172ba1c537ae5bcc01e65068c31cf1fce1a844bd1da050f"},
+    {file = "numcodecs-0.16.5-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:25be3a516ab677dad890760d357cfe081a371d9c0a2e9a204562318ac5969de3"},
+    {file = "numcodecs-0.16.5-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:0107e839ef75b854e969cb577e140b1aadb9847893937636582d23a2a4c6ce50"},
+    {file = "numcodecs-0.16.5-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:015a7c859ecc2a06e2a548f64008c0ec3aaecabc26456c2c62f4278d8fc20597"},
+    {file = "numcodecs-0.16.5-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:84230b4b9dad2392f2a84242bd6e3e659ac137b5a1ce3571d6965fca673e0903"},
+    {file = "numcodecs-0.16.5-cp313-cp313-win_amd64.whl", hash = "sha256:5088145502ad1ebf677ec47d00eb6f0fd600658217db3e0c070c321c85d6cf3d"},
+    {file = "numcodecs-0.16.5-cp314-cp314-macosx_10_13_x86_64.whl", hash = "sha256:b05647b8b769e6bc8016e9fd4843c823ce5c9f2337c089fb5c9c4da05e5275de"},
+    {file = "numcodecs-0.16.5-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:3832bd1b5af8bb3e413076b7d93318c8e7d7b68935006b9fa36ca057d1725a8f"},
+    {file = "numcodecs-0.16.5-cp314-cp314-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:49f7b7d24f103187f53135bed28bb9f0ed6b2e14c604664726487bb6d7c882e1"},
+    {file = "numcodecs-0.16.5-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:aec9736d81b70f337d89c4070ee3ffeff113f386fd789492fa152d26a15043e4"},
+    {file = "numcodecs-0.16.5-cp314-cp314-win_amd64.whl", hash = "sha256:b16a14303800e9fb88abc39463ab4706c037647ac17e49e297faa5f7d7dbbf1d"},
+    {file = "numcodecs-0.16.5.tar.gz", hash = "sha256:0d0fb60852f84c0bd9543cc4d2ab9eefd37fc8efcc410acd4777e62a1d300318"},
+]
+
+[package.dependencies]
+numpy = ">=1.24"
+typing_extensions = "*"
+
+[package.extras]
+crc32c = ["crc32c (>=2.7)"]
+docs = ["numpydoc", "pydata-sphinx-theme", "sphinx", "sphinx-issues"]
+google-crc32c = ["google-crc32c (>=1.5)"]
+msgpack = ["msgpack"]
+pcodec = ["pcodec (>=0.3,<0.4)"]
+test = ["coverage", "pytest", "pytest-cov", "pyzstd"]
+test-extras = ["crc32c", "importlib_metadata"]
+zfpy = ["zfpy (>=1.0.0)"]
+
+[[package]]
 name = "numpy"
 version = "1.26.4"
 description = "Fundamental package for array computing in Python"
@@ -2575,34 +2682,32 @@ test-all = ["distributed", "geopandas", "pystac_client", "pytest", "pytest-cov",
 
 [[package]]
 name = "openeo"
-version = "0.48.0"
+version = "0.39.1"
 description = "Client API for openEO"
 category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "openeo-0.48.0-py3-none-any.whl", hash = "sha256:f8df19fedcbe558443e7055a7a59a596006112b8212f5e0593985f2caf2a5e76"},
+    {file = "openeo-0.39.1-py3-none-any.whl", hash = "sha256:e0dce72870924ed5fa74079bd9f054f3ddbbcde8f5a76056eb2f9f698f18075f"},
 ]
 
 [package.dependencies]
 deprecated = ">=1.2.12"
 numpy = ">=1.17.0"
 oschmod = {version = ">=0.3.12", markers = "sys_platform == \"win32\""}
-pandas = ">0.20.0,<3.0.0"
-pystac = ">=1.5.0"
+pandas = ">0.20.0"
+pystac = ">=1.5.0,<1.12"
 requests = ">=2.26.0"
 shapely = ">=1.6.4"
-urllib3 = ">=1.9.0"
-xarray = ">=0.12.3,<2025.01.2"
+xarray = ">=0.12.3,<2025.01.2 || >2025.01.2"
 
 [package.extras]
-artifacts = ["boto3", "botocore"]
-dev = ["boto3", "botocore", "dirty_equals (>=0.8.0)", "flake8 (>=5.0.0)", "geopandas", "geopandas (>=0.14)", "httpretty (>=1.1.4)", "mock", "moto (>=5.0.0)", "myst-parser", "netCDF4 (>=1.7.0)", "pyarrow (>=10.0.1)", "pyproj (>=3.2.0)", "pystac-client (>=0.7.5)", "pytest (>=4.5.0)", "python-dateutil (>=2.7.0)", "requests-mock (>=1.8.0)", "sphinx", "sphinx-autodoc-annotation", "sphinx-autodoc-typehints (>=2.2.3)", "time_machine (>=2.13.0)", "types-boto3-s3", "types-boto3-sts", "urllib3 (<2.3.0)"]
+dev = ["dirty-equals (>=0.8.0)", "flake8 (>=5.0.0)", "geopandas", "geopandas (>=0.14)", "httpretty (>=1.1.4)", "matplotlib", "mock", "myst-parser", "netCDF4 (>=1.7.0)", "pyarrow (>=10.0.1)", "pyproj (>=3.2.0)", "pystac-client (>=0.7.5)", "pytest (>=4.5.0)", "python-dateutil (>=2.7.0)", "requests-mock (>=1.8.0)", "sphinx", "sphinx-autodoc-annotation", "sphinx-autodoc-typehints (>=2.2.3)", "time-machine", "urllib3 (<2.3.0)"]
 docs = ["myst-parser", "sphinx", "sphinx-autodoc-annotation", "sphinx-autodoc-typehints (>=2.2.3)"]
 jupyter = ["ipyleaflet (>=0.17.0)", "ipython"]
-localprocessing = ["openeo_pg_parser_networkx (>=2023.5.1)", "openeo_processes_dask[implementations] (>=2023.7.1)", "pyproj", "rioxarray (>=0.13.0)"]
+localprocessing = ["openeo-pg-parser-networkx (>=2023.5.1)", "openeo-processes-dask[implementations] (>=2023.7.1)", "pyproj", "rioxarray (>=0.13.0)"]
 oschmod = ["oschmod (>=0.3.12)"]
-tests = ["boto3", "botocore", "dirty_equals (>=0.8.0)", "flake8 (>=5.0.0)", "geopandas", "geopandas (>=0.14)", "httpretty (>=1.1.4)", "mock", "moto (>=5.0.0)", "netCDF4 (>=1.7.0)", "pyarrow (>=10.0.1)", "pyproj (>=3.2.0)", "pystac-client (>=0.7.5)", "pytest (>=4.5.0)", "python-dateutil (>=2.7.0)", "requests-mock (>=1.8.0)", "time_machine (>=2.13.0)", "urllib3 (<2.3.0)"]
+tests = ["dirty-equals (>=0.8.0)", "flake8 (>=5.0.0)", "geopandas", "geopandas (>=0.14)", "httpretty (>=1.1.4)", "matplotlib", "mock", "netCDF4 (>=1.7.0)", "pyarrow (>=10.0.1)", "pyproj (>=3.2.0)", "pystac-client (>=0.7.5)", "pytest (>=4.5.0)", "python-dateutil (>=2.7.0)", "requests-mock (>=1.8.0)", "time-machine", "urllib3 (<2.3.0)"]
 
 [[package]]
 name = "openeo-pg-parser-networkx"
@@ -2633,41 +2738,44 @@ plot = ["matplotlib (>=3.7.1,<4.0.0)"]
 
 [[package]]
 name = "openeo-processes-dask-slim"
-version = "2026.4.3"
+version = "2026.6.1"
 description = "Python implementations of many OpenEO processes, dask-friendly by default. This repo is a fork of the main repo and has been slimmed down to avoid dependency hell."
 category = "main"
 optional = false
-python-versions = "<3.13,>=3.10"
+python-versions = "<3.14,>=3.10"
 files = [
-    {file = "openeo_processes_dask_slim-2026.4.3-py3-none-any.whl", hash = "sha256:c36fc2e4e03a361042086d7dd6ced7d9b1d7806342d061ef001b8366062bca09"},
+    {file = "openeo_processes_dask_slim-2026.6.1-py3-none-any.whl", hash = "sha256:b8c7788b027828f8361264607dfd8bb32e7c210790ee894912262df27126cbdc"},
 ]
 
 [package.dependencies]
-dask = {version = ">=2023.4.0,<2025.2.0", extras = ["array", "dataframe", "distributed"], optional = true, markers = "extra == \"implementations\""}
-dask-geopandas = {version = "0.4.3", optional = true, markers = "extra == \"implementations\""}
-geopandas = {version = ">=0.11.1,<1", optional = true, markers = "extra == \"implementations\""}
+dask = {version = ">=2023.4.0", extras = ["array", "dataframe", "distributed"], optional = true, markers = "extra == \"implementations\""}
+dask-geopandas = {version = ">=0.5.0", optional = true, markers = "extra == \"implementations\""}
+geopandas = {version = ">=0.11.1,<2", optional = true, markers = "extra == \"implementations\""}
 geoparquet = ">=0.0.3,<0.0.4"
 joblib = {version = ">=1.3.2", optional = true, markers = "extra == \"implementations\""}
-numpy = "<2.0.0"
+numpy = ">=1.26.3,<3"
 odc-geo = {version = ">=0.4.1,<1", optional = true, markers = "extra == \"implementations\""}
 odc-stac = {version = ">=0.3.9", optional = true, markers = "extra == \"implementations\""}
 openeo = ">=0.36.0"
 openeo-pg-parser-networkx = {version = ">=2025.10", optional = true, markers = "extra == \"implementations\""}
 planetary_computer = {version = ">=0.5.1", optional = true, markers = "extra == \"implementations\""}
-pyarrow = ">=15.0.2,<16.0.0"
-pystac = "<1.12.0"
+pyarrow = ">=15.0.2"
+pystac = ">=1.8.0"
 pystac_client = {version = ">=0.6.1", optional = true, markers = "extra == \"implementations\""}
 rqadeforestation = ">=0.1"
 scipy = ">=1.11.3,<2.0.0"
 stac_validator = {version = ">=3.3.1", optional = true, markers = "extra == \"implementations\""}
-xarray = {version = ">=2022.11.0,<2025.8.1", optional = true, markers = "extra == \"implementations\""}
-xgboost = {version = ">=1.5.1,<2.1.4", optional = true, markers = "extra == \"ml\""}
+xarray = {version = ">=2025.6.0", optional = true, markers = "extra == \"implementations\""}
+xgboost = {version = ">=1.5.1", extras = ["dask"], optional = true, markers = "extra == \"ml\""}
 xvec = {version = "0.2.0", optional = true, markers = "extra == \"implementations\""}
-zarr = "<=2.18.7"
+zarr = [
+    {version = ">=2.17.0,<2.18", markers = "python_version < \"3.11\""},
+    {version = ">=2.18.7,<4", markers = "python_version >= \"3.11\""},
+]
 
 [package.extras]
-implementations = ["dask-geopandas (==0.4.3)", "dask[array,dataframe,distributed] (>=2023.4.0,<2025.2.0)", "geopandas (>=0.11.1,<1)", "joblib (>=1.3.2)", "odc-geo (>=0.4.1,<1)", "odc-stac (>=0.3.9)", "openeo-pg-parser-networkx (>=2025.10)", "planetary_computer (>=0.5.1)", "pystac_client (>=0.6.1)", "stac_validator (>=3.3.1)", "xarray (>=2022.11.0,<2025.8.1)", "xvec (==0.2.0)"]
-ml = ["xgboost (>=1.5.1,<2.1.4)"]
+implementations = ["dask-geopandas (>=0.5.0)", "dask[array,dataframe,distributed] (>=2023.4.0)", "geopandas (>=0.11.1,<2)", "joblib (>=1.3.2)", "odc-geo (>=0.4.1,<1)", "odc-stac (>=0.3.9)", "openeo-pg-parser-networkx (>=2025.10)", "planetary_computer (>=0.5.1)", "pystac_client (>=0.6.1)", "stac_validator (>=3.3.1)", "xarray (>=2025.6.0)", "xvec (==0.2.0)"]
+ml = ["xgboost[dask] (>=1.5.1)"]
 
 [[package]]
 name = "oschmod"
@@ -4901,28 +5009,29 @@ dev = ["pytest", "setuptools"]
 
 [[package]]
 name = "xarray"
-version = "2024.3.0"
+version = "2025.6.1"
 description = "N-D labeled arrays and datasets in Python"
 category = "main"
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.10"
 files = [
-    {file = "xarray-2024.3.0-py3-none-any.whl", hash = "sha256:ca2bc4da2bf2e7879e15862a7a7c3fc76ad19f6a08931d030220cef39a29118d"},
-    {file = "xarray-2024.3.0.tar.gz", hash = "sha256:5c1db19efdde61db7faedad8fc944f4e29698fb6fbd578d352668b63598bd1d8"},
+    {file = "xarray-2025.6.1-py3-none-any.whl", hash = "sha256:8b988b47f67a383bdc3b04c5db475cd165e580134c1f1943d52aee4a9c97651b"},
+    {file = "xarray-2025.6.1.tar.gz", hash = "sha256:a84f3f07544634a130d7dc615ae44175419f4c77957a7255161ed99c69c7c8b0"},
 ]
 
 [package.dependencies]
-numpy = ">=1.23"
-packaging = ">=22"
-pandas = ">=1.5"
+numpy = ">=1.24"
+packaging = ">=23.2"
+pandas = ">=2.1"
 
 [package.extras]
-accel = ["bottleneck", "flox", "numbagg", "opt-einsum", "scipy"]
-complete = ["xarray[accel,dev,io,parallel,viz]"]
-dev = ["hypothesis", "pre-commit", "pytest", "pytest-cov", "pytest-env", "pytest-timeout", "pytest-xdist", "ruff", "xarray[complete]"]
+accel = ["bottleneck", "flox", "numba (>=0.54)", "numbagg", "opt_einsum", "scipy"]
+complete = ["xarray[accel,etc,io,parallel,viz]"]
+etc = ["sparse"]
 io = ["cftime", "fsspec", "h5netcdf", "netCDF4", "pooch", "pydap", "scipy", "zarr"]
 parallel = ["dask[complete]"]
-viz = ["matplotlib", "nc-time-axis", "seaborn"]
+types = ["pandas-stubs", "scipy-stubs", "types-PyYAML", "types-Pygments", "types-colorama", "types-decorator", "types-defusedxml", "types-docutils", "types-networkx", "types-openpyxl", "types-pexpect", "types-psutil", "types-pycurl", "types-python-dateutil", "types-pytz", "types-setuptools"]
+viz = ["cartopy", "matplotlib", "nc-time-axis", "seaborn"]
 
 [[package]]
 name = "xgboost"
@@ -4943,7 +5052,10 @@ files = [
 ]
 
 [package.dependencies]
+dask = {version = "*", optional = true, markers = "extra == \"dask\""}
+distributed = {version = "*", optional = true, markers = "extra == \"dask\""}
 numpy = "*"
+pandas = {version = "*", optional = true, markers = "extra == \"dask\""}
 scipy = "*"
 
 [package.extras]
@@ -5144,25 +5256,54 @@ files = [
 
 [[package]]
 name = "zarr"
-version = "2.18.3"
+version = "2.17.2"
 description = "An implementation of chunked, compressed, N-dimensional arrays for Python"
 category = "main"
 optional = false
-python-versions = ">=3.10"
+python-versions = ">=3.9"
 files = [
-    {file = "zarr-2.18.3-py3-none-any.whl", hash = "sha256:b1f7dfd2496f436745cdd4c7bcf8d3b4bc1dceef5fdd0d589c87130d842496dd"},
-    {file = "zarr-2.18.3.tar.gz", hash = "sha256:2580d8cb6dd84621771a10d31c4d777dca8a27706a1a89b29f42d2d37e2df5ce"},
+    {file = "zarr-2.17.2-py3-none-any.whl", hash = "sha256:70d7cc07c24280c380ef80644151d136b7503b0d83c9f214e8000ddc0f57f69b"},
+    {file = "zarr-2.17.2.tar.gz", hash = "sha256:2cbaa6cb4e342d45152d4a7a4b2013c337fcd3a8e7bc98253560180de60552ce"},
 ]
 
 [package.dependencies]
 asciitree = "*"
 fasteners = {version = "*", markers = "sys_platform != \"emscripten\""}
 numcodecs = ">=0.10.0"
-numpy = ">=1.24"
+numpy = ">=1.23"
 
 [package.extras]
 docs = ["numcodecs[msgpack]", "numpydoc", "pydata-sphinx-theme", "sphinx", "sphinx-automodapi", "sphinx-copybutton", "sphinx-design", "sphinx-issues"]
 jupyter = ["ipytree (>=0.2.2)", "ipywidgets (>=8.0.0)", "notebook"]
+
+[[package]]
+name = "zarr"
+version = "3.1.5"
+description = "An implementation of chunked, compressed, N-dimensional arrays for Python"
+category = "main"
+optional = false
+python-versions = ">=3.11"
+files = [
+    {file = "zarr-3.1.5-py3-none-any.whl", hash = "sha256:29cd905afb6235b94c09decda4258c888fcb79bb6c862ef7c0b8fe009b5c8563"},
+    {file = "zarr-3.1.5.tar.gz", hash = "sha256:fbe0c79675a40c996de7ca08e80a1c0a20537bd4a9f43418b6d101395c0bba2b"},
+]
+
+[package.dependencies]
+donfig = ">=0.8"
+google-crc32c = ">=1.5"
+numcodecs = ">=0.14"
+numpy = ">=1.26"
+packaging = ">=22.0"
+typing-extensions = ">=4.9"
+
+[package.extras]
+cli = ["typer"]
+docs = ["astroid (<4)", "griffe-inherited-docstrings", "markdown-exec[ansi]", "mike (>=2.1.3)", "mkdocs (>=1.6.1)", "mkdocs-material[imaging] (>=9.6.14)", "mkdocs-redirects (>=1.2.0)", "mkdocstrings (>=0.29.1)", "mkdocstrings-python (>=1.16.10)", "numcodecs[msgpack]", "pytest", "rich", "ruff", "s3fs (>=2023.10.0)", "towncrier"]
+gpu = ["cupy-cuda12x"]
+optional = ["rich", "universal-pathlib"]
+remote = ["fsspec (>=2023.10.0)", "obstore (>=0.5.1)"]
+remote-tests = ["botocore", "fsspec (>=2023.10.0)", "moto[s3,server]", "obstore (>=0.5.1)", "requests", "s3fs (>=2023.10.0)"]
+test = ["coverage (>=7.10)", "hypothesis", "mypy", "numpydoc", "packaging", "pytest (<8.4)", "pytest-accept", "pytest-asyncio", "pytest-cov", "pytest-xdist", "rich", "tomlkit", "uv"]
 
 [[package]]
 name = "zict"
@@ -5199,4 +5340,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "c87313d544d2efe2edb273971214f4d9ba034241b33451103a727671c0c55df1"
+content-hash = "d030affe9a70819065ab72b1c921d8b4157fadd419c883a3d69dc6c279d33bec"
