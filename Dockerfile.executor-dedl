@@ -13,6 +13,16 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends git \
     && rm -rf /var/lib/apt/lists/*
 
+# Constrain the DEDL install away from the pystac pre-release line. eodag's
+# `pystac>=1.0.0b1` enables pre-releases in pip's resolver, and defair-data's
+# `pystac>=1.14.3` then lets pip pick the 1.15.0rc1 meta-package (pystac-core +
+# pystac-ext-*). That namespace split lands broken over the base image's
+# monolithic pystac, dropping `pystac/extensions/datacube.py`, which openeo
+# hard-imports -> ModuleNotFoundError at executor startup. Pinning <1.15 forces
+# stable pystac 1.14.3 (still monolithic, still has the datacube extension) and
+# satisfies every declared requirement in the tree.
+RUN printf '%s\n' 'pystac<1.15' > /tmp/dedl-constraints.txt
+
 RUN --mount=type=secret,id=eumetsat_gitlab_token \
     EUMETSAT_GITLAB_TOKEN="$(cat /run/secrets/eumetsat_gitlab_token)" \
     && \
@@ -24,6 +34,7 @@ RUN --mount=type=secret,id=eumetsat_gitlab_token \
     GIT_CONFIG_KEY_2="url.https://github.com/.insteadOf" \
     GIT_CONFIG_VALUE_2="ssh://git@github.com/" \
         /opt/openeo_argoworkflows_executor/.venv/bin/python -m pip install --no-cache-dir \
+            -c /tmp/dedl-constraints.txt \
             "openeo-processes-dedl-cube-load @ git+https://gitlab.eumetsat.int/dedl-cube/openeo-processes-dedl-cube-load.git@${DEDL_PACKAGE_REF}"
 
 COPY ./openeo_argoworkflows/executor/openeo_argoworkflows_executor/executor.py \
