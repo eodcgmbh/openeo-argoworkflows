@@ -23,6 +23,14 @@ RUN apt-get update \
 # satisfies every declared requirement in the tree.
 RUN printf '%s\n' 'pystac<1.15' > /tmp/dedl-constraints.txt
 
+# Record the base image's own (PyPI) openeo-processes-dask-slim version so we can
+# restore it after the DEDL install below. The DEDL package git-pins a fork
+# (Eurac dev_remodel branch) that pip installs over our build because a direct
+# URL requirement always wins, regardless of version number.
+RUN /opt/openeo_argoworkflows_executor/.venv/bin/python -m pip show \
+        openeo-processes-dask-slim | awk '/^Version:/{print $2}' \
+        > /tmp/slim-version.txt
+
 RUN --mount=type=secret,id=eumetsat_gitlab_token \
     EUMETSAT_GITLAB_TOKEN="$(cat /run/secrets/eumetsat_gitlab_token)" \
     && \
@@ -36,6 +44,15 @@ RUN --mount=type=secret,id=eumetsat_gitlab_token \
         /opt/openeo_argoworkflows_executor/.venv/bin/python -m pip install --no-cache-dir \
             -c /tmp/dedl-constraints.txt \
             "openeo-processes-dedl-cube-load @ git+https://gitlab.eumetsat.int/dedl-cube/openeo-processes-dedl-cube-load.git@${DEDL_PACKAGE_REF}"
+
+# Pin back to our own PyPI openeo-processes-dask-slim, overriding the fork the
+# DEDL package drags in (its dev_remodel branch ships a breaking
+# DataArray->Dataset cube change that our executor's load processes don't
+# follow). The DEDL cube-load code only touches slim in a single place, so this
+# is safe. --no-deps keeps the rest of the resolved tree untouched.
+RUN /opt/openeo_argoworkflows_executor/.venv/bin/python -m pip install --no-cache-dir \
+        --force-reinstall --no-deps \
+        "openeo-processes-dask-slim==$(cat /tmp/slim-version.txt)"
 
 COPY ./openeo_argoworkflows/executor/openeo_argoworkflows_executor/executor.py \
     /opt/openeo_argoworkflows_executor/executor.py
