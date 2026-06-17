@@ -25,7 +25,7 @@ env:
   IMAGE_NAME: ${{ github.repository_owner }}/openeo-argoworkflows-executor-dedl
   # Single source of truth for the base executor version. Bump this one value to
   # build against (and tag the DEDL image with) a new base executor release.
-  BASE_VERSION: '2026.6.4'
+  BASE_VERSION: '2026.6.5'
   DEDL_PACKAGE_REF: ${{ inputs.dedl_package_ref || 'main' }}
 
 jobs:
