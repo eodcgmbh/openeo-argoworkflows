@@ -76,9 +76,16 @@ def execute(parsed_graph: OpenEOProcessGraph):
     _register_processes_from_module(process_registry, "openeo_processes_dask_slim")
 
     try:
-        importlib.import_module("openeo_processes_dedl_cube_load")
-        _register_processes_from_module(
-            process_registry, "openeo_processes_dedl_cube_load"
+        import openeo_processes_dedl_cube_load as dedl_cube_load
+        from openeo_processes_dedl_cube_load import specs as dedl_specs
+
+        # The dedl package doesn't follow the
+        # `<pkg>.process_implementations` + `<pkg>.specs` layout that
+        # _register_processes_from_module expects: load_stac lives at the
+        # package top level with its spec in `<pkg>.specs`. Bind it directly.
+        process_registry["load_stac"] = Process(
+            spec=dedl_specs.load_stac,
+            implementation=dedl_cube_load.load_stac,
         )
     except ImportError:
         pass
