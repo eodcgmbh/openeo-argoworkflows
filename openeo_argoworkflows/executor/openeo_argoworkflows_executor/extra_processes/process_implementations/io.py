@@ -28,6 +28,27 @@ def _stac_auth_headers() -> dict:
     return {}
 
 
+def _subset_to_bands(cube, bands: Optional[list[str]]):
+    """Restrict a loaded cube to the requested bands.
+
+    Handles both a band-dimension DataArray and a per-variable Dataset. No-op
+    when no bands are requested or none of them are present.
+    """
+    if not bands:
+        return cube
+    if isinstance(cube, xr.Dataset):
+        present = [b for b in bands if b in cube.data_vars]
+        return cube[present] if present else cube
+    for band_dim in ("bands", "band"):
+        if band_dim in cube.dims:
+            available = cube[band_dim].values.tolist()
+            present = [b for b in bands if b in available]
+            if present:
+                return cube.sel({band_dim: present})
+            break
+    return cube
+
+
 def load_collection(
     id: str,
     spatial_extent: Optional[Union[BoundingBox, dict, str, GeoJson]] = None,
@@ -36,10 +57,6 @@ def load_collection(
     properties: Optional[dict] = None,
     **kwargs,
 ):
-    query_dict = {}
-
-    query_dict["collections"] = [id]
-
     if spatial_extent is None:
         raise Exception(
             "No spatial extent was provided, will not load the entire x and y axis of the datacube."
@@ -48,6 +65,33 @@ def load_collection(
         raise Exception(
             "No temporal extent was provided, will not load the entire temporal axis of the datacube."
         )
+
+    if "STAC_API_URL" not in os.environ:
+        raise Exception("STAC URL Not available in executor config.")
+
+    # Prefer the dedl load_stac for DEDL-native / icechunk collections: it reads
+    # native assets (icechunk/defair) and applies band selection itself, instead
+    # of the odc.stac_load fallback below that materialises every asset.
+    try:
+        from openeo_processes_dedl_cube_load import load_stac
+    except ImportError:
+        load_stac = None
+
+    if load_stac is not None:
+        stac_url = os.environ["STAC_API_URL"].rstrip("/") + f"/collections/{id}"
+        cube = load_stac(
+            url=stac_url,
+            spatial_extent=spatial_extent,
+            temporal_extent=temporal_extent,
+            bands=bands,
+            properties=properties,
+        )
+        return _subset_to_bands(cube, bands)
+
+    # Fallback: odc.stac_load (e.g. base executor image without the dedl package).
+    query_dict = {}
+
+    query_dict["collections"] = [id]
 
     if isinstance(spatial_extent, BoundingBox):
         query_dict["bbox"] = (
@@ -62,9 +106,6 @@ def load_collection(
     query_dict["datetime"] = tuple(
         [time.root.isoformat() for time in temporal_extent if time != "None"]
     )
-
-    if "STAC_API_URL" not in os.environ:
-        raise Exception("STAC URL Not available in executor config.")
 
     catalog = pystac_client.Client.open(
         os.environ["STAC_API_URL"],
@@ -153,6 +194,10 @@ def load_collection(
 
     if nodata:
         kwargs["nodata"] = nodata
+
+    # Only load the requested bands instead of every asset in the items.
+    if bands:
+        kwargs["bands"] = bands
 
     lazy_xarray = stac_load(
         result_items,
