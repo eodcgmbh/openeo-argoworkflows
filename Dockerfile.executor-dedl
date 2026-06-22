@@ -59,4 +59,28 @@ COPY ./openeo_argoworkflows/executor/openeo_argoworkflows_executor/executor.py \
 
 RUN chown ${USER_ID}:0 /opt/openeo_argoworkflows_executor/executor.py
 
+# Register `dedl` as a valid EODAG provider. eodag's bundled providers.yml ships
+# no `dedl` entry, so openeo-processes-dedl-cube-load's
+# `set_preferred_provider("dedl")` raises UnsupportedProvider. This skeleton in
+# the user config (~/.config/eodag/eodag.yml for the `executor` user, HOME
+# /home/executor) is enough to register the provider name; the priority and auth
+# credentials are supplied at runtime from the EODAG__DEDL__* environment
+# variables the API forwards into the executor pod.
+RUN <<'EOF'
+set -eu
+install -d -o ${USER_ID} -g 0 /home/executor/.config/eodag
+cat > /home/executor/.config/eodag/eodag.yml <<'YML'
+dedl:
+    priority:
+    search:
+    download:
+        output_dir:
+    auth:
+        credentials:
+            username:
+            password:
+YML
+chown ${USER_ID}:0 /home/executor/.config/eodag/eodag.yml
+EOF
+
 USER ${USER_ID}
