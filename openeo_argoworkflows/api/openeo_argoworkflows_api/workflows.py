@@ -1,5 +1,7 @@
 import json
 
+from pydantic import SecretStr
+
 from hera.workflows import Steps, Workflow, WorkflowsService, Step, Env
 from hera.workflows.models import (
     Template,
@@ -41,6 +43,27 @@ def executor_workflow(
                 ),
             ]
         )
+
+    # Icechunk-store (S3) access + EODAG/DEDL credentials, passed through to the
+    # executor with the exact env var names that boto3, EODAG and icechunk read.
+    executor_passthrough_env = {
+        "AWS_DEFAULT_REGION": settings.AWS_DEFAULT_REGION,
+        "AWS_ENDPOINT_URL": settings.AWS_ENDPOINT_URL,
+        "AWS_ACCESS_KEY_ID": settings.AWS_ACCESS_KEY_ID,
+        "AWS_SECRET_ACCESS_KEY": settings.AWS_SECRET_ACCESS_KEY,
+        "EODAG__DEDL__AUTH__CREDENTIALS__USERNAME": settings.EODAG_DEDL_USERNAME,
+        "EODAG__DEDL__AUTH__CREDENTIALS__PASSWORD": settings.EODAG_DEDL_PASSWORD,
+        "EODAG__DEDL__PRIORITY": settings.EODAG_DEDL_PRIORITY,
+        "ICECHUNK_S3_CONNECT_TIMEOUT_MS": settings.ICECHUNK_S3_CONNECT_TIMEOUT_MS,
+        "ICECHUNK_S3_OPERATION_ATTEMPT_TIMEOUT_MS": settings.ICECHUNK_S3_OPERATION_ATTEMPT_TIMEOUT_MS,
+        "ICECHUNK_S3_OPERATION_TIMEOUT_MS": settings.ICECHUNK_S3_OPERATION_TIMEOUT_MS,
+    }
+    for env_name, env_value in executor_passthrough_env.items():
+        if env_value is None:
+            continue
+        if isinstance(env_value, SecretStr):
+            env_value = env_value.get_secret_value()
+        executor_env.append(Env(name=env_name, value=str(env_value)))
 
     with Workflow(
         generate_name="openeo-executor-",
