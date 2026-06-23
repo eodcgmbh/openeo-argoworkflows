@@ -19,20 +19,23 @@ class ExtendedAppSettings(AppSettings):
 
     # Credentials/config passed through to the executor for icechunk-store (S3)
     # access and EODAG/DEDL data loading. The EODAG variables keep their exact
-    # `EODAG__DEDL__...` env names via validation aliases.
+    # `EODAG__DEDL__...` env names. NOTE: this runs on pydantic v1, where the
+    # binding kwarg is `env=`; `validation_alias=` (pydantic v2) is silently
+    # ignored and the field falls back to its name (`EODAG_DEDL_*`), so the
+    # `EODAG__DEDL__*` env vars never bind and forward as None.
     AWS_DEFAULT_REGION: Optional[str] = None
     AWS_ENDPOINT_URL: Optional[str] = None
     AWS_ACCESS_KEY_ID: Optional[SecretStr] = None
     AWS_SECRET_ACCESS_KEY: Optional[SecretStr] = None
 
     EODAG_DEDL_USERNAME: Optional[SecretStr] = Field(
-        default=None, validation_alias="EODAG__DEDL__AUTH__CREDENTIALS__USERNAME"
+        default=None, env="EODAG__DEDL__AUTH__CREDENTIALS__USERNAME"
     )
     EODAG_DEDL_PASSWORD: Optional[SecretStr] = Field(
-        default=None, validation_alias="EODAG__DEDL__AUTH__CREDENTIALS__PASSWORD"
+        default=None, env="EODAG__DEDL__AUTH__CREDENTIALS__PASSWORD"
     )
     EODAG_DEDL_PRIORITY: Optional[str] = Field(
-        default=None, validation_alias="EODAG__DEDL__PRIORITY"
+        default=None, env="EODAG__DEDL__PRIORITY"
     )
 
     ICECHUNK_S3_CONNECT_TIMEOUT_MS: Optional[str] = None
