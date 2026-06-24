@@ -103,18 +103,23 @@ def execute(process_graph, user_profile, dask_profile):
 
     parsed_graph = OpenEOProcessGraph(pg_data=openeo_parameters.process_graph)
 
-    execute(parsed_graph=parsed_graph)
+    try:
+        execute(parsed_graph=parsed_graph)
+    finally:
+        # Always tear down the dask cluster, even if process-graph execution
+        # (e.g. save_result) raised. Otherwise the gateway cluster keeps at least
+        # one worker pod alive until CLUSTER_IDLE_TIMEOUT and the job appears stuck.
+        # Can't assume the same cluster is running post process graph execution due
+        # to sub workflows processing. If the previous cluster was closed, check for
+        # a new one!
+        if dask_cluster:
+            if dask_cluster.status == "closed":
+                cluster_list = gateway.list_clusters()
+                if cluster_list:
+                    dask_cluster = gateway.connect(cluster_list[0].name)
 
-    # Can't assume the same cluster is running post process graph execution due to sub workflows processing.
-    # If the previous cluster was closed, check for a new one!
-    if dask_cluster:
-        if dask_cluster.status == "closed":
-            cluster_list = gateway.list_clusters()
-            if cluster_list:
-                dask_cluster = gateway.connect(cluster_list[0].name)
-
-        # Can call shutdown on previously closed clusters.
-        dask_cluster.shutdown()
+            # Can call shutdown on previously closed clusters.
+            dask_cluster.shutdown()
 
     # TODO Time to generate STAC
     from pystac import Asset, Collection, Extent, SpatialExtent, TemporalExtent, layout
