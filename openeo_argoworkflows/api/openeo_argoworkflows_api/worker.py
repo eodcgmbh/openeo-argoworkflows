@@ -18,4 +18,8 @@ conn = Redis(
 if __name__ == '__main__':
     with Connection(conn):
         worker = Worker(map(Queue, ['default']))
-        worker.work()
+        # with_scheduler=True runs rq's built-in scheduler in-process so delayed
+        # jobs (q.enqueue_in, used by poll_job_status and queue_to_submit) actually
+        # execute. Without it, scheduled jobs sit in the ScheduledJobRegistry
+        # forever and job status never transitions out of "running".
+        worker.work(with_scheduler=True)
