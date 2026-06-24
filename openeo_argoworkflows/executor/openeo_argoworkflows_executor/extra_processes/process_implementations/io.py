@@ -245,15 +245,21 @@ def save_result(
     # TODO A nice abstraction to split the xarray into the respective output datasets
     # TODO Some nicer way to handle the user workspace
     destination = Path(os.environ["OPENEO_RESULTS_PATH"]) / f"{_id}.nc"
-    dim = data.openeo.band_dims[0] if data.openeo.band_dims else None
     crs = data.rio.crs
 
-    data.attrs = {}
-    data.attrs["crs"] = str(crs)
+    # The dedl load_stac path yields an xarray.Dataset (one variable per band),
+    # which is already in the target shape and has no `.openeo` DataArray accessor.
+    # The odc fallback path yields a RasterCube (DataArray), which we split into a
+    # Dataset along its band dimension.
+    if isinstance(data, xr.Dataset):
+        out_data: xr.Dataset = data
+    else:
+        dim = data.openeo.band_dims[0] if data.openeo.band_dims else None
+        out_data = data.to_dataset(
+            dim=dim, name="name" if not dim else None, promote_attrs=True
+        )
 
-    out_data: xr.Dataset = data.to_dataset(
-        dim=dim, name="name" if not dim else None, promote_attrs=True
-    )
+    out_data.attrs = {"crs": str(crs)}
 
     dtype = None
     if not dtype:
