@@ -179,5 +179,5 @@ def poll_job_status(job: ArgoJob, metadata: Any):
     elif workflow.status.phase in ("Failed", "Error"):
         job.status = Status.error
         modify(job)
-    elif workflow.status.phase in ("Running", "Pending"):
-        return q.enqueue(poll_job_status, job, metadata)
+    else:
+        return q.enqueue_in(timedelta(seconds=15), poll_job_status, job, metadata)
