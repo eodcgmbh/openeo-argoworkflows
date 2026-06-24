@@ -1,4 +1,5 @@
 import base64
+import json
 import logging
 import numpy as np
 import os
@@ -214,6 +215,37 @@ def load_collection(
     return filter_bbox(lazy_xarray, extent=spatial_extent)
 
 
+def _derive_crs(data) -> Optional[pyproj.CRS]:
+    """Resolve the cube CRS without tripping over rioxarray.
+
+    For dedl native (geostationary) cubes, ``.rio.crs`` raises: band selection
+    drops the ``geostationary`` grid-mapping variable, leaving a dangling
+    ``grid_mapping`` reference and an invalid ``crs="None"`` attr. Derive the CRS
+    from the geostationary ``projection`` attr (a JSON PROJ dict) instead, and
+    only fall back to rioxarray when that attr is absent.
+    """
+    projection = data.attrs.get("projection")
+    if projection:
+        try:
+            proj = (
+                json.loads(projection)
+                if isinstance(projection, str)
+                else dict(projection)
+            )
+            # `type`/`no_defs` are metadata, not PROJ params, and break from_dict.
+            proj = {k: v for k, v in proj.items() if k not in ("type", "no_defs")}
+            return pyproj.CRS.from_dict(proj)
+        except Exception:
+            logging.warning(
+                "save_result: could not parse projection attr %r", projection
+            )
+    try:
+        return data.rio.crs
+    except Exception:
+        logging.warning("save_result: could not resolve CRS via rioxarray")
+        return None
+
+
 def save_result(
     data: RasterCube,
     format: str = "netcdf",
@@ -245,7 +277,7 @@ def save_result(
     # TODO A nice abstraction to split the xarray into the respective output datasets
     # TODO Some nicer way to handle the user workspace
     destination = Path(os.environ["OPENEO_RESULTS_PATH"]) / f"{_id}.nc"
-    crs = data.rio.crs
+    crs = _derive_crs(data)
 
     # The dedl load_stac path yields an xarray.Dataset (one variable per band),
     # which is already in the target shape and has no `.openeo` DataArray accessor.
@@ -259,7 +291,14 @@ def save_result(
             dim=dim, name="name" if not dim else None, promote_attrs=True
         )
 
-    out_data.attrs = {"crs": str(crs)}
+    # Band selection drops the `geostationary` grid-mapping variable but leaves a
+    # dangling `grid_mapping` reference on the data variables; strip it so the
+    # output doesn't point at a missing variable.
+    for var in out_data.data_vars:
+        out_data[var].attrs.pop("grid_mapping", None)
+        out_data[var].encoding.pop("grid_mapping", None)
+
+    out_data.attrs = {"crs": crs.to_string() if crs is not None else "None"}
 
     dtype = None
     if not dtype:

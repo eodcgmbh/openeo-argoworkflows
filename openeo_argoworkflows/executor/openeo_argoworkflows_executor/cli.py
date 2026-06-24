@@ -35,6 +35,7 @@ def execute(process_graph, user_profile, dask_profile):
 
     import os
     import json
+    import shutil
 
     from dask_gateway import Gateway
     import openeo_processes_dask_slim
@@ -120,6 +121,17 @@ def execute(process_graph, user_profile, dask_profile):
 
             # Can call shutdown on previously closed clusters.
             dask_cluster.shutdown()
+
+        # Remove the dedl load_stac native-download cache. It is an intermediate,
+        # re-fetchable cache that can be many GB per job; left behind it fills the
+        # workspace volume. Path mirrors openeo-processes-dedl-cube-load's
+        # `OPENEO_USER_WORKSPACE / "eodag_download"`.
+        download_cache = (
+            openeo_parameters.user_profile.OPENEO_USER_WORKSPACE / "eodag_download"
+        )
+        if download_cache.is_dir():
+            logger.info("Removing dedl download cache %s", download_cache)
+            shutil.rmtree(download_cache, ignore_errors=True)
 
     # TODO Time to generate STAC
     from pystac import Asset, Collection, Extent, SpatialExtent, TemporalExtent, layout
