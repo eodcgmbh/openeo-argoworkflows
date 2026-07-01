@@ -95,6 +95,7 @@ def executor_workflow(
                     container=Container(
                         env=executor_env,
                         image=settings.OPENEO_EXECUTOR_IMAGE,
+                        image_pull_policy=settings.OPENEO_EXECUTOR_IMAGE_PULL_POLICY,
                         command=["openeo_executor"],
                         args=[
                             "execute",
