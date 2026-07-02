@@ -246,6 +246,18 @@ def _derive_crs(data) -> Optional[pyproj.CRS]:
         return None
 
 
+def _netcdf_safe_attrs(attrs: dict) -> dict:
+    """Coerce attribute values to netCDF-serializable types.
+
+    netCDF attrs must be str/Number/ndarray/list/tuple/bytes. Readers (e.g.
+    defair) can attach dict-valued attrs such as
+    ``_destine-datalake-cube.data-model={'version': ...}`` which make ``to_netcdf``
+    raise TypeError. Anything not already serializable is stringified.
+    """
+    safe_types = (str, int, float, bytes, list, tuple, np.ndarray, np.number)
+    return {k: (v if isinstance(v, safe_types) else str(v)) for k, v in attrs.items()}
+
+
 def save_result(
     data: RasterCube,
     format: str = "netcdf",
@@ -308,5 +320,11 @@ def save_result(
 
     encoding = {var: comp for var in out_data.data_vars}
     out_data = clean_unused_coordinates(out_data)
+
+    # Strip non-serializable attrs (e.g. reader-added dict metadata) from the
+    # dataset and every variable/coordinate, otherwise to_netcdf raises TypeError.
+    out_data.attrs = _netcdf_safe_attrs(out_data.attrs)
+    for var in out_data.variables:
+        out_data[var].attrs = _netcdf_safe_attrs(out_data[var].attrs)
 
     out_data.to_netcdf(path=destination, encoding=encoding)
