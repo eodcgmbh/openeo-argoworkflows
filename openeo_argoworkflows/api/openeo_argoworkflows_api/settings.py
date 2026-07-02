@@ -15,6 +15,17 @@ class ExtendedAppSettings(AppSettings):
     OPENEO_EXECUTOR_IMAGE_PULL_POLICY: Optional[str] = "Always"
     OPENEO_SIGN_KEY: Optional[str]
 
+    # Executor pod resources (distinct from the DASK_WORKER_* settings, which
+    # size the dask-gateway worker pods). The memory *request* is the important
+    # one: without it the scheduler can place the executor on a small node, and
+    # the data reads — computed locally on the executor, not on the dask workers —
+    # get node-OOM-killed under memory pressure. The request reserves RAM / forces
+    # a roomy node; the limit is the hard ceiling.
+    OPENEO_EXECUTOR_CPU_REQUEST: str = "1"
+    OPENEO_EXECUTOR_CPU_LIMIT: str = "4"
+    OPENEO_EXECUTOR_MEMORY_REQUEST: str = "8Gi"
+    OPENEO_EXECUTOR_MEMORY_LIMIT: str = "16Gi"
+
     STAC_API_USERNAME: Optional[SecretStr] = None
     STAC_API_PASSWORD: Optional[SecretStr] = None
 
