@@ -11,7 +11,7 @@ from pyproj import Geod, CRS
 from pystac import Asset, Item
 from pystac.extensions.projection import ProjectionExtension
 from shapely import geometry, Polygon, box
-from typing import Tuple, Union
+from typing import Optional, Tuple, Union
 
 class GridCorners(BaseModel):
 
@@ -41,17 +41,37 @@ def create_stac_item(href: str) -> Item:
 
     id = os.path.splitext(os.path.basename(href))[0]
 
-    with xr.open_dataset(href) as dataset:
-        crs = dataset.rio.crs
-        proj_bbox = dataset.rio.bounds()
-        proj_transform = list(dataset.rio.transform())[0:6]
-        proj_shape = dataset.rio.shape
+    crs = None
+    proj_bbox = proj_transform = proj_shape = None
+    bbox = None
 
-    proj_geometry = shapely.geometry.mapping(shapely.geometry.box(*proj_bbox))
-    geometry = stactools.core.projection.reproject_geom(
-        crs, "EPSG:4326", proj_geometry, precision=6
-    )
-    bbox = list(shapely.geometry.shape(geometry).bounds)
+    with xr.open_dataset(href) as dataset:
+        try:
+            crs = dataset.rio.crs
+        except Exception:
+            # Cubes without a PROJ-recognised CRS (e.g. healpix, whose `crs`
+            # attr is `healpix:1024` / `None`) make rioxarray raise. Treat them
+            # as CRS-less and fall back to a lat/lon bbox below.
+            crs = None
+
+        if crs is not None:
+            proj_bbox = dataset.rio.bounds()
+            proj_transform = list(dataset.rio.transform())[0:6]
+            proj_shape = dataset.rio.shape
+        else:
+            bbox = _wgs84_bbox_from_dataset(dataset)
+
+    if crs is not None:
+        proj_geometry = shapely.geometry.mapping(shapely.geometry.box(*proj_bbox))
+        geometry = stactools.core.projection.reproject_geom(
+            crs, "EPSG:4326", proj_geometry, precision=6
+        )
+        bbox = list(shapely.geometry.shape(geometry).bounds)
+    elif bbox is not None:
+        geometry = shapely.geometry.mapping(shapely.geometry.box(*bbox))
+    else:
+        geometry = None
+
     item = Item(
         id=id,
         geometry=geometry,
@@ -61,17 +81,41 @@ def create_stac_item(href: str) -> Item:
         properties={},
     )
 
-    projection = ProjectionExtension.ext(item, add_if_missing=True)
-    epsg = crs.to_epsg()
-    if epsg:
-        projection.epsg = epsg
-    else:
-        projection.wkt2 = crs.to_wkt("WKT2_2015")
+    # Only attach the projection extension when there is a real CRS; CRS-less
+    # cubes (healpix) get a plain geometry-only item.
+    if crs is not None:
+        projection = ProjectionExtension.ext(item, add_if_missing=True)
+        epsg = crs.to_epsg()
+        if epsg:
+            projection.epsg = epsg
+        else:
+            projection.wkt2 = crs.to_wkt("WKT2_2015")
 
-    projection.transform = proj_transform
-    projection.shape = proj_shape
+        projection.transform = proj_transform
+        projection.shape = proj_shape
 
     return item
+
+
+def _wgs84_bbox_from_dataset(dataset) -> Optional[list]:
+    """Best-effort WGS84 bbox from ``lat``/``lon`` (or ``y``/``x``) coordinates.
+
+    Used for cubes without a projected CRS (e.g. healpix), where rioxarray
+    cannot derive bounds. Returns ``None`` when no such coordinates are present.
+    """
+    lat = dataset.coords.get("lat", dataset.coords.get("y"))
+    lon = dataset.coords.get("lon", dataset.coords.get("x"))
+    if lat is None or lon is None:
+        return None
+    try:
+        return [
+            float(lon.min()),
+            float(lat.min()),
+            float(lon.max()),
+            float(lat.max()),
+        ]
+    except Exception:
+        return None
 
 
 class StacGrid:

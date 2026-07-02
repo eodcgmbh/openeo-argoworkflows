@@ -267,16 +267,15 @@ def save_result(
 
     def clean_unused_coordinates(ds):
         """
-        Remove all coordinates that are not used in the DataArray dimensions.
+        Drop coordinates that don't sit on any of the dataset's dimensions
+        (e.g. a leftover scalar ``spatial_ref``), while keeping auxiliary
+        coordinates such as ``lat``/``lon`` that are indexed by a real
+        dimension (e.g. ``healpix_index``) and are needed to interpret the cube.
         """
-        # Gather all dimensions used by DataArray variables
-        used_dims = set()
-        for var in ds.dims:
-            used_dims.update(ds[var].dims)
-
-        # Drop unused coordinates
+        dims = set(ds.dims)
         for coord in list(ds.coords):
-            if coord not in used_dims:
+            coord_dims = set(ds[coord].dims)
+            if not coord_dims or not coord_dims.issubset(dims):
                 ds = ds.drop_vars(coord)
         return ds
 
@@ -310,7 +309,10 @@ def save_result(
         out_data[var].attrs.pop("grid_mapping", None)
         out_data[var].encoding.pop("grid_mapping", None)
 
-    out_data.attrs = {"crs": crs.to_string() if crs is not None else "None"}
+    # Only record a `crs` attr when we actually resolved one. Writing the
+    # literal string "None" makes rioxarray raise when the result is re-opened
+    # (e.g. in create_stac_item) instead of cleanly reporting "no CRS".
+    out_data.attrs = {"crs": crs.to_string()} if crs is not None else {}
 
     dtype = None
     if not dtype:
