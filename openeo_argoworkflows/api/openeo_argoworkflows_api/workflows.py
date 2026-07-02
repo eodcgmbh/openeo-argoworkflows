@@ -8,6 +8,7 @@ from hera.workflows.models import (
     Container,
     Metadata,
     PersistentVolumeClaimVolumeSource,
+    ResourceRequirements,
     Volume,
     VolumeMount,
     SecurityContext,
@@ -96,6 +97,16 @@ def executor_workflow(
                         env=executor_env,
                         image=settings.OPENEO_EXECUTOR_IMAGE,
                         image_pull_policy=settings.OPENEO_EXECUTOR_IMAGE_PULL_POLICY,
+                        resources=ResourceRequirements(
+                            requests={
+                                "cpu": settings.OPENEO_EXECUTOR_CPU_REQUEST,
+                                "memory": settings.OPENEO_EXECUTOR_MEMORY_REQUEST,
+                            },
+                            limits={
+                                "cpu": settings.OPENEO_EXECUTOR_CPU_LIMIT,
+                                "memory": settings.OPENEO_EXECUTOR_MEMORY_LIMIT,
+                            },
+                        ),
                         command=["openeo_executor"],
                         args=[
                             "execute",
